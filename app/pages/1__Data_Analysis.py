@@ -99,7 +99,7 @@ st.markdown('<p class="sub-header">Complete Learning Guide with Examples & Code<
 # Sidebar navigation
 st.sidebar.title("🔍 Navigation")
 st.sidebar.markdown("---")
-analysis_type = st.sidebar.radio(
+analysis_type = st.sidebar.selectbox(
     "Choose an analysis type:",
     ["🏠 Overview", "📈 Descriptive", "🔍 Diagnostic", "🧭 Exploratory",
      "📊 Inferential", "🔮 Predictive", "💡 Prescriptive", "🔗 Causal", "⚙️ Mechanistic"]
