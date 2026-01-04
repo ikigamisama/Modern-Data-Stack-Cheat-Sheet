@@ -1,5 +1,6 @@
 import streamlit as st
 from components import sidebar
+
 from components.data_visualization import main_page
 from components.DataVisualization import (
     Trend,
@@ -7,8 +8,15 @@ from components.DataVisualization import (
     Relationship,
     Composition,
     Geospatial,
-    Ranking
+    Ranking,
+    Flow,
+    PartToWhole,
+    TimeSeries,
+    Correlation,
+    Network,
+    Multivariate
 )
+
 # Page configuration
 st.set_page_config(
     page_title="Data Visualization Hub",
@@ -244,3 +252,15 @@ elif page == "🗺️ Geospatial":
     Geospatial().output()
 elif page == "🏆 Ranking":
     Ranking().output()
+elif page == "🌊 Flow":
+    Flow().output()
+elif page == "📊 Part-to-Whole":
+    PartToWhole().output()
+elif page == "⏰ Time Series":
+    TimeSeries().output()
+elif page == "🔗 Correlation":
+    Correlation().output()
+elif page == "🕸️ Network":
+    Network().output()
+elif page == "📊 Multivariate":
+    Multivariate().output()
