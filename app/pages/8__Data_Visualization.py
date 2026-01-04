@@ -253,59 +253,38 @@ page = st.sidebar.selectbox(
     ["🏠 Main Page"] + navigation_link_category,
 )
 
+PAGE_MAP = {
+    "📈 Trend": Trend,
+    "🎯 Density": Density,
+    "🔗 Relationship": Relationship,
+    "🥧 Composition": Composition,
+    "🗺️ Geospatial": Geospatial,
+    "🏆 Ranking": Ranking,
+    "🌊 Flow": Flow,
+    "📊 Part-to-Whole": PartToWhole,
+    "⏰ Time Series": TimeSeries,
+    "🔗 Correlation": Correlation,
+    "🕸️ Network": Network,
+    "📊 Multivariate": Multivariate,
+    "🏗️ Structural": Structural,
+    "🎨 Qualitative": Qualitative,
+    "📏 Gauge": Gauge,
+    "🚨 Anomaly": Anomaly,
+    "🎯 Behavioral": Behavioral,
+    "📝 Text Analysis": TextAnalysis,
+    "📋 Text-Based": TextBased,
+    "↔️ Deviation": Deviation,
+    "💹 Financial": Financial,
+    "🔷 Concept": Concept,
+    "🔶 Proportional": Proportional,
+    "🌳 Hierarchical": Hierarchical,
+    "📊 Distribution": Distribution,
+    "📊 Comparison": Comparison,
+    "📈 Statistical": Statistical,
+}
+
+
 if page == "🏠 Main Page":
     main_page(categories, categories2)
-elif page == "📈 Trend":
-    Trend().output()
-elif page == "🎯 Density":
-    Density().output()
-elif page == "🔗 Relationship":
-    Relationship().output()
-elif page == "🥧 Composition":
-    Composition().output()
-elif page == "🗺️ Geospatial":
-    Geospatial().output()
-elif page == "🏆 Ranking":
-    Ranking().output()
-elif page == "🌊 Flow":
-    Flow().output()
-elif page == "📊 Part-to-Whole":
-    PartToWhole().output()
-elif page == "⏰ Time Series":
-    TimeSeries().output()
-elif page == "🔗 Correlation":
-    Correlation().output()
-elif page == "🕸️ Network":
-    Network().output()
-elif page == "📊 Multivariate":
-    Multivariate().output()
-elif page == "🏗️ Structural":
-    Structural().output()
-elif page == "🎨 Qualitative":
-    Qualitative().output()
-elif page == "📏 Gauge":
-    Gauge().output()
-elif page == "🚨 Anomaly":
-    Anomaly().output()
-elif page == "🎯 Behavioral":
-    Behavioral().output()
-elif page == "📝 Text Analysis":
-    TextAnalysis().output()
-elif page == "📋 Text-Based":
-    TextBased().output()
-elif page == "↔️ Deviation":
-    Deviation().output()
-elif page == "💹 Financial":
-    Financial().output()
-elif page == "🔷 Concept":
-    Concept().output()
-elif page == "🔶 Proportional":
-    Proportional().output()
-elif page == "🌳 Hierarchical":
-    Hierarchical().output()
-elif page == "📊 Distribution":
-    Distribution().output()
-elif page == "📊 Comparison":
-    Comparison().output()
-elif page == "📈 Statistical":
-    Statistical().output()
+else:
+    PAGE_MAP[page]().output()
