@@ -14,7 +14,22 @@ from components.DataVisualization import (
     TimeSeries,
     Correlation,
     Network,
-    Multivariate
+    Multivariate,
+    Structural,
+    Qualitative,
+    Gauge,
+    Anomaly,
+    Behavioral,
+    TextAnalysis,
+    TextBased,
+    Deviation,
+    Financial,
+    Concept,
+    Proportional,
+    Hierarchical,
+    Distribution,
+    Comparison,
+    Statistical
 )
 
 # Page configuration
@@ -264,3 +279,33 @@ elif page == "🕸️ Network":
     Network().output()
 elif page == "📊 Multivariate":
     Multivariate().output()
+elif page == "🏗️ Structural":
+    Structural().output()
+elif page == "🎨 Qualitative":
+    Qualitative().output()
+elif page == "📏 Gauge":
+    Gauge().output()
+elif page == "🚨 Anomaly":
+    Anomaly().output()
+elif page == "🎯 Behavioral":
+    Behavioral().output()
+elif page == "📝 Text Analysis":
+    TextAnalysis().output()
+elif page == "📋 Text-Based":
+    TextBased().output()
+elif page == "↔️ Deviation":
+    Deviation().output()
+elif page == "💹 Financial":
+    Financial().output()
+elif page == "🔷 Concept":
+    Concept().output()
+elif page == "🔶 Proportional":
+    Proportional().output()
+elif page == "🌳 Hierarchical":
+    Hierarchical().output()
+elif page == "📊 Distribution":
+    Distribution().output()
+elif page == "📊 Comparison":
+    Comparison().output()
+elif page == "📈 Statistical":
+    Statistical().output()
