@@ -11,7 +11,7 @@ st.markdown(
     /* ===============================
        THEME VARIABLES
     =============================== */
-    [data-theme="light"] {
+    body {
         --primary: #1f77b4;
         --text-muted: #666;
         --bg-card: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -21,7 +21,8 @@ st.markdown(
         --shadow: rgba(0,0,0,0.1);
     }
 
-    [data-theme="dark"] {
+    /* Dark mode */
+    body[class*="dark"] {
         --primary: #4fa3ff;
         --text-muted: #aaa;
         --bg-card: linear-gradient(135deg, #2b2f77 0%, #3b1d5a 100%);
