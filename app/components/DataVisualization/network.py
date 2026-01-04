@@ -196,7 +196,7 @@ class Network:
                             height=700
         ))
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     def render_chord_diagram(self, G: nx.Graph, data_type: str):
         st.markdown("### 🎵 Chord Diagram - Flow Between Entities")
@@ -222,7 +222,7 @@ class Network:
             height=700
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         # Flow analysis
         in_strength = matrix.sum(axis=0)
@@ -392,7 +392,7 @@ class Network:
         st.markdown("### 📋 Sample Connections")
         edges = [(u, v, d.get('weight', 1)) for u, v, d in G.edges(data=True)]
         df = pd.DataFrame(edges[:20], columns=['Source', 'Target', 'Weight'])
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width='stretch')
 
     def output(self):
         self.render_header()

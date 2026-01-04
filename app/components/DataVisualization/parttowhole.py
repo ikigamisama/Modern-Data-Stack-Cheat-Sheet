@@ -140,7 +140,7 @@ class PartToWhole:
                     )
                     cumulative += row['Value']
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         total = df[val_col].sum()
         st.success(f"**Current Period Total:** {total:,} {val_col.lower()}")
@@ -198,7 +198,7 @@ class PartToWhole:
             height=600
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         st.success(f"**Grand Total:** {total:,}")
 
@@ -265,7 +265,7 @@ class PartToWhole:
                     bgcolor="rgba(255,255,255,0.7)"
                 )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         st.success(f"**Final Total: {total:,}**")
 
@@ -334,7 +334,7 @@ class PartToWhole:
     def render_data_table(self, df: pd.DataFrame):
         st.markdown("### 📋 Current Part-to-Whole Data")
         st.dataframe(df.sort_values('Percentage', ascending=False),
-                     use_container_width=True)
+                     width='stretch')
 
     def output(self):
         self.render_header()

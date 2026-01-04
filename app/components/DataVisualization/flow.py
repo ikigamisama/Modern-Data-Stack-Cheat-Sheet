@@ -122,7 +122,7 @@ class Flow:
 
         fig.update_layout(
             title_text=f"{data_type} - Sankey Flow Diagram", font_size=12)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         total_flow = df['value'].sum()
         st.markdown("### 📊 Flow Summary")
@@ -206,7 +206,7 @@ fig.show()
                 title=f"{data_type} - User Path Transitions"
             )
 
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
         else:
             st.info(
@@ -349,7 +349,7 @@ fig.show()
     def render_data_table(self, df: pd.DataFrame):
         st.markdown("### 📊 Flow Data (Source → Target)")
         st.dataframe(df.sort_values('value', ascending=False),
-                     use_container_width=True)
+                     width='stretch')
 
     def output(self):
         self.render_header()

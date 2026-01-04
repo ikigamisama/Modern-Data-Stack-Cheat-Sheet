@@ -119,7 +119,7 @@ class Multivariate:
             title=f"{data_type} - Parallel Coordinates",
             color_continuous_scale=px.colors.diverging.Tealrose
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         # Insights
         st.markdown("### 🔍 Key Patterns")
@@ -155,7 +155,7 @@ class Multivariate:
             height=800
         )
         fig.update_traces(diagonal_visible=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         # Correlation heatmap
         st.markdown("### Correlation Overview")
@@ -201,7 +201,7 @@ class Multivariate:
             title=f"{data_type} - Radar Comparison",
             height=600
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         # Profile summary
         st.markdown("### Profile Summary")
@@ -288,7 +288,7 @@ class Multivariate:
 
     def render_data_table(self, df: pd.DataFrame):
         st.markdown("### 📋 Multivariate Data Table")
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width='stretch')
 
     def output(self):
         self.render_header()

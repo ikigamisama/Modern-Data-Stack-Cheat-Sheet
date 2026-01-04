@@ -347,7 +347,7 @@ class Correlation:
 
     def render_data_preview(self, df: pd.DataFrame):
         st.markdown("### 📊 Data Preview (First 10 Rows)")
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(df.head(10), width='stretch')
 
     def output(self):
         self.render_header()

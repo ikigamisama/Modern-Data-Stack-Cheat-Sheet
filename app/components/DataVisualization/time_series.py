@@ -175,7 +175,7 @@ class TimeSeries:
             fig.add_scatter(x=df[date_col], y=ma, mode='lines',
                             name='7-Period MA', line=dict(color='green'))
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         st.markdown("### 📊 Key Metrics")
         col1, col2, col3, col4 = st.columns(4)
@@ -215,7 +215,7 @@ class TimeSeries:
         )
         fig.update_yaxes(autorange="reversed")
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         total_days = (tasks_df['End'].max() - tasks_df['Start'].min()).days
         avg_progress = tasks_df['Progress'].mean(
@@ -313,7 +313,7 @@ class TimeSeries:
         st.pyplot(fig)
         plt.close(fig)
 
-        st.dataframe(events_df, use_container_width=True)
+        st.dataframe(events_df, width='stretch')
 
         st.markdown("""
         **When to use:** Highlighting important dates, releases, spikes, or milestones.
@@ -372,7 +372,7 @@ class TimeSeries:
 
     def render_data_table(self, df: pd.DataFrame):
         st.markdown("### 📊 Time Series Data Sample")
-        st.dataframe(df.head(20), use_container_width=True)
+        st.dataframe(df.head(20), width='stretch')
 
     def output(self):
         self.render_header()
