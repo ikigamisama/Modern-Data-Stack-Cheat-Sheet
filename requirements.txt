@@ -9,3 +9,4 @@ seaborn==0.13.2
 squarify==0.4.4
 streamlit==1.52.2
 wordcloud==1.9.4
+statsmodels
