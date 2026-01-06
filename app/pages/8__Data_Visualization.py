@@ -210,36 +210,37 @@ st.markdown("""
 st.markdown('# 📊 Data Visualization Hub')
 
 categories = [
+    # 1. Time-Based (temporal changes)
+    ("⏰", "Time Series", "Analyze temporal data"),
     ("📈", "Trend", "Track changes over time"),
     ("🎯", "Density", "Show concentration patterns"),
-    ("🔗", "Relationship", "Discover correlations"),
-    ("🥧", "Composition", "Break down the whole"),
-    ("🗺️", "Geospatial", "Map your data"),
-    ("🏆", "Ranking", "Compare and order"),
-    ("🌊", "Flow", "Track movements"),
-    ("📊", "Part-to-Whole", "Show proportions"),
-    ("⏰", "Time Series", "Analyze temporal data"),
+    ("📊", "Distribution", "Understand spread"),
     ("🔗", "Correlation", "Measure relationships"),
-    ("🕸️", "Network", "Visualize connections"),
+    ("🔗", "Relationship", "Discover correlations"),
     ("📊", "Multivariate", "Handle complexity"),
+    ("🕸️", "Network", "Visualize connections"),
+    ("📊", "Comparison", "Evaluate options"),
+    ("🏆", "Ranking", "Compare and order"),
+    ("🥧", "Composition", "Break down the whole"),
+    ("📊", "Part-to-Whole", "Show proportions"),
 ]
 
 categories2 = [
-    ("🏗️", "Structural", "Show organization"),
-    ("🎨", "Qualitative", "Visualize concepts"),
-    ("📏", "Gauge", "Track progress"),
-    ("🚨", "Anomaly", "Detect outliers"),
-    ("🎯", "Behavioral", "Understand users"),
-    ("📝", "Text Analysis", "Mine insights"),
-    ("📋", "Text-Based", "Present data"),
-    ("↔️", "Deviation", "Show variance"),
-    ("💹", "Financial", "Track markets"),
-    ("🔷", "Concept", "Illustrate ideas"),
     ("🔶", "Proportional", "Compare sizes"),
     ("🌳", "Hierarchical", "Show structure"),
-    ("📊", "Distribution", "Understand spread"),
-    ("📊", "Comparison", "Evaluate options"),
+    ("🏗️", "Structural", "Show organization"),
+    ("🌊", "Flow", "Track movements"),
+    ("🗺️", "Geospatial", "Map your data"),
+    ("↔️", "Deviation", "Show variance"),
+    ("🚨", "Anomaly", "Detect outliers"),
+    ("📏", "Gauge", "Track progress"),
+    ("🎯", "Behavioral", "Understand users"),
+    ("💹", "Financial", "Track markets"),
     ("📈", "Statistical", "Analyze rigorously"),
+    ("📝", "Text Analysis", "Mine insights"),
+    ("📋", "Text-Based", "Present data"),
+    ("🎨", "Qualitative", "Visualize concepts"),
+    ("🔷", "Concept", "Illustrate ideas")
 ]
 
 

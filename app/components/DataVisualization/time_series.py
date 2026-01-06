@@ -499,6 +499,5 @@ plt.close(fig)
 
         if chart_type in chart_map:
             chart_map[chart_type]()
-
-        self.render_key_characteristics()
         self.render_examples(dataset_type, df)
+        self.render_key_characteristics()
