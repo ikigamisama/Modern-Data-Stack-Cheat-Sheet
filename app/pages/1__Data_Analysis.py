@@ -65,7 +65,7 @@ st.markdown(
        EXAMPLE BOX
     =============================== */
     .example-box {
-        background-color: var(--bg-example);
+        background-color: transparent;
         padding: 0.5rem 1rem;       /* smaller vertical padding */
         border-left: 3px solid var(--primary); /* thinner accent bar */
         border-radius: 6px;         /* slightly tighter corners */

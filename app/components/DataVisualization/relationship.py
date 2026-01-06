@@ -179,8 +179,13 @@ class Relationship:
         **Key Features:** Interactive, supports trendlines, grouping by category.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import plotly.express as px
+                
 fig = px.scatter(df, x='x_column', y='y_column', color='category',
                  trendline='ols', title='Scatter Plot')
 fig.show()
@@ -221,8 +226,13 @@ fig.show()
         **Key Features:** Rich multivariate insight, interactive hover details.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import plotly.express as px
+                
 fig = px.scatter(df, x='x', y='y', size='size_var', color='category',
                  hover_data=['extra_info'], title='Bubble Plot')
 fig.show()
@@ -244,9 +254,14 @@ fig.show()
         **Key Features:** Color intensity shows strength and direction of relationships.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import seaborn as sns
 import matplotlib.pyplot as plt
+                
 corr = df.corr()
 plt.figure(figsize=(10, 8))
 sns.heatmap(corr, annot=True, cmap='RdYlBu_r', center=0)
@@ -287,8 +302,14 @@ plt.show()
         **Key Features:** All pairwise scatter plots + distributions on diagonal.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import seaborn as sns
+import matplotlib.pyplot as plt
+                
 sns.pairplot(df, hue='category', diag_kind='kde', plot_kws={'alpha': 0.6})
 plt.show()
         ''', language='python')
@@ -344,6 +365,62 @@ plt.show()
                     st.success(f"**Current Chart Type:** {chart_type}")
                     st.info("This dataset is currently active in your view.")
 
+    def render_key_characteristics(self):
+        st.markdown("### 🔗 Understanding Relationships in Data")
+        st.markdown("""
+        Analyzing relationships between variables is key to uncovering **how one factor
+        influences another**. This analysis helps identify patterns, dependencies, and
+        predictive potential.
+        """)
+
+        st.markdown("#### 📈 Showing Positive or Negative Correlations")
+        st.markdown("""
+        - **Positive correlation:** Both variables move in the same direction  
+        - **Negative correlation:** Variables move in opposite directions  
+
+        Example applications:
+        - Marketing spend ↔ Sales revenue  
+        - Temperature ↔ Heating usage
+        """)
+
+        st.markdown("#### 📐 Identifying Linear or Non-linear Relationships")
+        st.markdown("""
+        Linear relationships show proportional change, while non-linear relationships
+        exhibit varying rates of change. Detecting the correct type is crucial for:
+        - Accurate modeling  
+        - Forecasting  
+        - Hypothesis testing
+        """)
+
+        st.markdown("#### ⚠️ Revealing Outliers and Anomalies")
+        st.markdown("""
+        Points that deviate from expected patterns are outliers. These can indicate:
+        - Data errors  
+        - Rare events  
+        - Hidden opportunities  
+
+        Outlier detection ensures robust analysis and predictive modeling.
+        """)
+
+        st.markdown("#### 🤖 Supporting Predictive Modeling")
+        st.markdown("""
+        Relationships form the foundation of predictive analytics. Understanding how
+        variables interact improves:
+        - Feature selection  
+        - Model accuracy  
+        - Actionable insights
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Relationship Analysis Matters")
+        st.markdown("""
+        Exploring relationships turns raw data into meaningful knowledge. This enables:
+        - Better operational decisions  
+        - Outcome anticipation  
+        - Evidence-based strategies
+        """)
+
     def output(self):
         self.render_header()
         chart_type, dataset_type, sample_size, show_correlation = self.render_configuration()
@@ -361,5 +438,5 @@ plt.show()
         if chart_type in chart_map:
             chart_map[chart_type]()
 
-        self.render_key_characteristics()
         self.render_examples(chart_type, dataset_type)
+        self.render_key_characteristics()

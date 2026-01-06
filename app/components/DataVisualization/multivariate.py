@@ -138,6 +138,29 @@ class Multivariate:
                 for c1, c2, r in [s for s in strong if s[2] < -0.6]:
                     st.error(f"{c1} ↔ {c2}: {r:+.3f}")
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.express as px
+import pandas as pd
+                
+ df_plot = df[['Item'] + selected_dims].copy()
+if normalize:
+    scaler = MinMaxScaler()
+    df_plot[selected_dims] = scaler.fit_transform(
+        df_plot[selected_dims])
+
+fig = px.parallel_coordinates(
+    df_plot,
+    dimensions=selected_dims,
+    color=selected_dims[0],
+    labels={d: d.replace('_', ' ') for d in selected_dims},
+    title=f"{data_type} - Parallel Coordinates",
+    color_continuous_scale=px.colors.diverging.Tealrose
+)          
+fig.show()      
+""", language="python")
+
     def render_scatter_plot_matrix(self, df: pd.DataFrame, dimensions: list, data_type: str, normalize: bool):
         st.markdown("### 🔁 Scatter Plot Matrix - Pairwise Relationships")
 
@@ -166,6 +189,27 @@ class Multivariate:
         ax.set_title("Correlation Matrix")
         st.pyplot(fig_corr)
         plt.close(fig_corr)
+
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.express as px
+import pandas as pd
+                
+df_plot = df[dims].copy()
+if normalize:
+    df_plot = pd.DataFrame(
+        MinMaxScaler().fit_transform(df_plot), columns=dims)
+fig = px.scatter_matrix(
+    df_plot,
+    dimensions=dims,
+    color=df_plot[dims[0]],
+    title=f"{data_type} - Scatter Matrix",
+    height=800
+)
+fig.update_traces(diagonal_visible=False)
+fig.show()
+""", language="python")
 
     def render_radar_chart(self, df: pd.DataFrame, dimensions: list, data_type: str, normalize: bool):
         st.markdown("### 🎯 Radar Chart - Profile Comparison")
@@ -210,6 +254,34 @@ class Multivariate:
         summary = df_plot[['Overall', 'Balance']].round(3)
         st.dataframe(summary.style.highlight_max(axis=0))
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import pandas as pd
+                
+df_plot = df.set_index('Item').loc[selected_items, radar_dims].copy()
+if normalize:
+    df_plot = pd.DataFrame(MinMaxScaler().fit_transform(
+        df_plot), index=df_plot.index, columns=df_plot.columns)
+fig = go.Figure()
+colors = px.colors.qualitative.Bold
+for i, item in enumerate(df_plot.index):
+    values = df_plot.loc[item].tolist() + [df_plot.loc[item].iloc[0]]
+    fig.add_trace(go.Scatterpolar(
+        r=values,
+        theta=radar_dims + [radar_dims[0]],
+        fill='toself',
+        name=item,
+        line_color=colors[i % len(colors)]
+    ))
+fig.update_layout(
+    polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
+    title=f"{data_type} - Radar Comparison",
+    height=600
+)
+fig.show()""", language="python")
+
     def render_heatmap(self, df: pd.DataFrame, dimensions: list, data_type: str, normalize: bool):
         st.markdown("### 🌡️ Heatmap - Value Intensity Matrix")
 
@@ -243,31 +315,81 @@ class Multivariate:
         st.write("**Cluster Profiles (Average Values):**")
         st.dataframe(cluster_means.round(2).style.highlight_max(axis=0))
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+                
+heatmap_data = df.set_index('Item')[dimensions].copy()
+if normalize:
+    heatmap_data = pd.DataFrame(MinMaxScaler().fit_transform(heatmap_data),
+                                index=heatmap_data.index, columns=heatmap_data.columns)
+fig, ax = plt.subplots(figsize=(14, 10))
+sns.heatmap(
+    heatmap_data,
+    annot=True,
+    fmt=".2f",
+    cmap="YlOrRd",
+    center=0.5 if normalize else None,
+    cbar_kws={"label": "Normalized Value" if normalize else "Raw Value"},
+    ax=ax
+)
+ax.set_title(f"{data_type} - Multivariate Heatmap")
+plt.xticks(rotation=45, ha='right')
+plt.show()""", language="python")
+
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Multivariate Visualizations")
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("""
-            **High-Dimensional Insight**
-            - Handles 3+ variables at once
-            - Reveals hidden interactions
-            """)
-            st.markdown("""
-            **Pattern Discovery**
-            - Detects clusters and outliers
-            - Shows correlation structures
-            """)
-        with col2:
-            st.markdown("""
-            **Comparative Power**
-            - Enables multi-criteria decisions
-            - Highlights trade-offs
-            """)
-            st.markdown("""
-            **Profile Analysis**
-            - Compares items holistically
-            - Identifies strengths/weaknesses
-            """)
+        st.markdown("### 🧠 Understanding Multivariate Analysis")
+
+        st.markdown("""
+        Multivariate analysis examines **multiple variables at the same time** to
+        understand complex interactions, trade-offs, and system-level behavior.
+        """)
+
+        st.markdown("#### 📦 Handling High Dimensionality")
+        st.markdown("""
+        High-dimensional datasets require techniques that reduce complexity while
+        preserving structure.
+
+        Common approaches include:
+        - Dimensionality reduction  
+        - Feature projection  
+        - Latent variable modeling  
+        """)
+
+        st.markdown("#### 🔍 Revealing Complex Patterns")
+        st.markdown("""
+        Multivariate views expose patterns that do not appear in pairwise analysis.
+        These include nonlinear interactions, compound effects, and hidden structures.
+        """)
+
+        st.markdown("#### ⚖️ Supporting Multi-Criteria Decision Making")
+        st.markdown("""
+        Many real-world decisions involve trade-offs across multiple criteria.
+        Multivariate analysis enables balanced evaluation instead of single-metric
+        optimization.
+        """)
+
+        st.markdown("#### 🔗 Showing Variable Interactions")
+        st.markdown("""
+        Variables rarely act independently.
+        Multivariate analysis highlights how variables influence one another,
+        explaining system-level behavior and model performance.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Multivariate Analysis Matters")
+        st.markdown("""
+        Multivariate analysis embraces complexity to deliver deeper insight.
+        It underpins:
+        - Advanced analytics  
+        - Machine learning models  
+        - System optimization  
+        - Strategic decision-making  
+        """)
 
     def render_examples(self, dataset_type: str, df: pd.DataFrame):
         st.markdown("### 💡 Real-world Examples")
@@ -286,10 +408,6 @@ class Multivariate:
                     st.success(
                         f"**Current Dataset:** {len(df)} items × {len(df.columns)-1} dimensions")
 
-    def render_data_table(self, df: pd.DataFrame):
-        st.markdown("### 📋 Multivariate Data Table")
-        st.dataframe(df, width='stretch')
-
     def output(self):
         self.render_header()
         chart_type, dataset_type, num_items, num_dimensions, normalize_data = self.render_configuration()
@@ -307,6 +425,5 @@ class Multivariate:
         if chart_type in chart_map:
             chart_map[chart_type]()
 
-        self.render_key_characteristics()
         self.render_examples(dataset_type, df)
-        self.render_data_table(df)
+        self.render_key_characteristics()

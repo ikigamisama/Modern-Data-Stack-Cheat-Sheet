@@ -156,22 +156,19 @@ class Ranking:
                           'categoryorder': 'total ascending'})
         st.plotly_chart(fig, width='stretch')
 
-        st.markdown("### 🏆 Current Leaderboard")
-        for i, row in sorted_df.iterrows():
-            rank = i + 1
-            val = row[value_col]
-            name = row.iloc[0]
-            st.markdown(f"**#{rank}** — **{name}**: {val:,.0f}" if isinstance(
-                val, int) else f"**#{rank}** — **{name}**: {val:.2f}")
-
         st.markdown("""
         **When to use:** Clear top-to-bottom comparison, identifying leaders and laggards.
         
         **Key Features:** Horizontal bars for easy label reading, color intensity shows magnitude.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
 
         st.code('''
 import plotly.express as px
+import pandas as pd
+                
 sorted_df = df.sort_values('sales_amount', ascending=False)
 fig = px.bar(sorted_df, x='sales_amount', y='sales_rep', orientation='h',
              color='sales_amount', color_continuous_scale='Viridis')
@@ -233,7 +230,22 @@ fig.show()
         **Key Features:** Clear upward/downward movement, great for performance reviews.
         """)
 
-        st.code('''
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(current_df)
+        st.markdown("#### 🛠️ Sample Code")
+
+        st.code(''''
+import plotly.express as px
+import pandas as pd
+slope_data = []
+for _, row in current_df.iterrows():
+    name = row.iloc[0]
+    prev_val = previous_df.loc[previous_df.iloc[:, 0] == name, 'value_col'].iloc[0]
+    slope_data.extend([
+        {'item': name, 'period': 'Previous', 'value': prev_val},
+        {'item': name, 'period': 'Current', 'value': row['value_col']}   
+    ])
+slope_df = pd.DataFrame(slope_data)
 fig = px.line(slope_df, x='period', y='value', color='item', markers=True)
 fig.show()
         ''', language='python')
@@ -294,6 +306,47 @@ fig.show()
         
         **Key Features:** Compact, shows actual vs target + qualitative ranges.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code('''import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+                
+values = df['value_col'].values
+min_val, max_val = values.min(), values.max()
+fig, ax = plt.subplots(figsize=(12, max(6, len(df) * 0.6)))
+for i, val in enumerate(values):
+    y = len(df) - i - 1
+    ranges = [min_val, min_val + (max_val - min_val) * 0.6,
+              min_val + (max_val - min_val) * 0.8, max_val
+    # Background ranges
+    ax.barh(y, ranges[1] - ranges[0], left=ranges[0],
+            height=0.7, color='#ffcccc', alpha=0.7)
+    ax.barh(y, ranges[2] - ranges[1], left=ranges[1],
+            height=0.7, color='#fff2cc', alpha=0.7)
+    ax.barh(y, ranges[3] - ranges[2], left=ranges[2],
+            height=0.7, color='#ccffcc', alpha=0.7)
+    # Performance bar
+    ax.barh(y, val - min_val, left=min_val,
+            height=0.4, color='#2E86AB', alpha=0.9)
+    # Target line (80th percentile)
+    target = ranges[2]
+    ax.plot([target, target], [y - 0.35, y + 0.35],
+            color='red', linewidth=3)
+    # Label
+    name = df.iloc[len(df)-1-i, 0]
+    ax.text(max_val * 1.02, y, f"{name} ({val:,.1f})",
+            va='center', fontsize=10, fontweight='bold')
+                
+ax.set_xlim(min_val, max_val * 1.15)
+ax.set_ylim(-0.5, len(df) - 0.5)
+ax.set_yticks(range(len(df)))
+ax.set_yticklabels([f"#{i+1}" for i in range(len(df))])
+ax.set_xlabel('value_col')
+ax.set_title('Bullet Graph Performance Ranking')
+ax.grid(axis='x', alpha=0.3)
+plt.show()''', language='python')
 
     def render_step_chart(self, df: pd.DataFrame, data_type: str):
         st.markdown("### 🪜 Step Chart - Cumulative Contribution (Pareto)")
@@ -349,35 +402,85 @@ fig.show()
         
         **Key Features:** Shows diminishing returns, great for prioritization.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code('''import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+                
+sorted_df = df.sort_values('value_col', ascending=False).reset_index(drop=True)
+cumulative = sorted_df['value_col'].cumsum()
+total = sorted_df['value_col'].sum()
+cum_pct = cumulative / total * 100
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+# Step chart
+ranks = list(range(1, len(sorted_df) + 1))
+ax1.step(ranks, cumulative, where='mid', linewidth=3, color='#f5576c')
+ax1.fill_between(ranks, cumulative, alpha=0.3, color='#f5576c')
+ax1.set_xlabel("Rank Position")
+ax1.set_ylabel("Cumulative value_col")
+ax1.set_title("Cumulative Contribution")
+ax1.grid(alpha=0.3)
+# Pareto
+ax2.bar(ranks, sorted_df['value_col'] / total * 100,
+        color='skyblue', alpha=0.7, label='Individual %')
+ax2.plot(ranks, cum_pct, color='red', marker='o',
+            linewidth=3, label='Cumulative %')
+ax2.axhline(80, color='orange', linestyle='--',
+            linewidth=2, label='80% Threshold')
+ax2.set_xlabel("Rank Position")
+ax2.set_ylabel("Percentage of Total")
+ax2.set_title("Pareto Analysis (80/20 Rule)")
+ax2.legend()
+ax2.grid(alpha=0.3)
+plt.show()''', language='python')
 
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Ranking Visualizations")
-        col1, col2 = st.columns(2)
+        st.markdown("### 🏆 Understanding Ranking and Comparative Analysis")
+        st.markdown("""
+        Ranking analysis orders entities based on a chosen metric to highlight
+        **relative performance**. It enables fast comparison, prioritization,
+        and decision-making.
+        """)
 
-        with col1:
-            st.markdown("""
-            **Clear Hierarchical Order**
-            - Instantly see top and bottom performers
-            - Natural ordering creates strong visual hierarchy
-            """)
-            st.markdown("""
-            **Performance Tracking**
-            - Track changes over time
-            - Spot rising stars and declining items
-            """)
+        st.markdown("#### 📐 Clear Hierarchical Order")
+        st.markdown("""
+        Ranking establishes a clear order from highest to lowest (or vice versa).
+        This removes ambiguity and ensures comparisons are straightforward and consistent.
+        """)
 
-        with col2:
-            st.markdown("""
-            **Comparative Analysis**
-            - Easy magnitude and gap comparison
-            - Benchmark against targets or peers
-            """)
-            st.markdown("""
-            **Decision Support**
-            - Reward top performers
-            - Focus improvement efforts
-            - Allocate resources effectively
-            """)
+        st.markdown("#### 🥇 Easy Identification of Leaders and Laggards")
+        st.markdown("""
+        Ranked views make top and bottom performers immediately visible.
+
+        - Leaders define benchmarks and best practices  
+        - Laggards highlight risk, inefficiency, or opportunity  
+        """)
+
+        st.markdown("#### ⚡ Facilitating Quick Comparisons")
+        st.markdown("""
+        Instead of interpreting raw numbers, viewers compare positions and relative spacing.
+        This reduces cognitive load and enables faster, more confident decisions.
+        """)
+
+        st.markdown("#### 📊 Showing Relative Magnitude Differences")
+        st.markdown("""
+        Ranking also reveals **how large the gaps are** between entities.
+        Large gaps suggest dominance or imbalance, while small gaps indicate competition
+        or parity.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Ranking Analysis Matters")
+        st.markdown("""
+        Ranking turns complex data into clear priorities. It helps organizations:
+        - Focus attention effectively  
+        - Reward high performance  
+        - Address underperformance  
+        - Allocate resources strategically  
+        """)
 
     def render_examples(self, dataset_type: str, df: pd.DataFrame):
         st.markdown("### 💡 Real-world Examples")
@@ -399,11 +502,6 @@ fig.show()
                     top_val = df.iloc[0, 1]
                     st.success(f"**Current #1:** {top_name} — {top_val:,.0f}")
 
-    def render_data_table(self, df: pd.DataFrame):
-        st.markdown("### 📊 Current Ranking Data")
-        st.dataframe(df.sort_values(df.columns[1], ascending=False).reset_index(
-            drop=True), width='stretch')
-
     def output(self):
         self.render_header()
         chart_type, dataset_type, num_items, show_comparison = self.render_configuration()
@@ -421,6 +519,5 @@ fig.show()
         if chart_type in chart_map:
             chart_map[chart_type]()
 
-        self.render_key_characteristics()
         self.render_examples(dataset_type, current_df)
-        self.render_data_table(current_df)
+        self.render_key_characteristics()

@@ -157,6 +157,61 @@ class PartToWhole:
         **Key Features:** Easy to see shifts in proportion over time.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.express as px
+import pandas as pd
+import numpy as np
+                
+periods = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025']
+time_data = []
+
+cat_col = df.columns[0]
+val_col = df.columns[1]
+
+base_values = df[val_col].values
+
+for period in periods:
+    variation = np.random.uniform(0.85, 1.15, len(df))
+    period_vals = (base_values * variation).astype(int)
+    period_total = period_vals.sum()
+
+    for cat, val in zip(df[cat_col], period_vals):
+        time_data.append({
+            'Period': period,
+            'Category': cat,
+            'Value': val,
+            'Percentage': val / period_total * 100
+        })
+
+time_df = pd.DataFrame(time_data)
+
+fig = px.bar(
+    time_df, x='Period', y='Value', color='Category',
+    title=f"{data_type} - Quarterly Stacked Breakdown",
+    color_discrete_sequence=px.colors.qualitative.Bold,
+    height=600
+)
+
+if show_percentages:
+    for period in periods:
+        period_data = time_df[time_df['Period']
+                                == period].sort_values('Value')
+        cumulative = 0
+        for _, row in period_data.iterrows():
+            fig.add_annotation(
+                x=period,
+                y=cumulative + row['Value'] / 2,
+                text=f"{row['Percentage']:.1f}%",
+                showarrow=False,
+                font=dict(color="white", size=10, weight="bold"),
+                align="center"
+            )
+            cumulative += row['Value']
+                
+fig.show()""", language='python')
+
     def render_nested_bar_chart(self, df: pd.DataFrame, data_type: str):
         st.markdown("### 📈 Nested Bar Chart - Hierarchical Breakdown")
 
@@ -216,6 +271,52 @@ class PartToWhole:
         
         **Key Features:** Drill-down structure, preserves both part-to-main and part-to-total proportions.
         """)
+
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.express as px
+import pandas as pd
+import numpy as np
+                
+cat_col = df.columns[0]
+val_col = df.columns[1]
+total = df[val_col].sum()
+
+nested_data = []
+for _, row in df.iterrows():
+    main_cat = row[cat_col]
+    main_val = row[val_col]
+    n_subs = np.random.randint(2, 4)
+    sub_names = [
+        f"{main_cat} - Sub {chr(65+i)}" for i in range(n_subs)]
+
+    sub_vals = np.random.randint(
+        main_val // (n_subs + 1), main_val // n_subs * 2, n_subs)
+    sub_vals = np.append(sub_vals, main_val -
+                            sub_vals.sum())  # ensure exact total
+
+    for sub_name, sub_val in zip(sub_names, sub_vals):
+        nested_data.append({
+            'Main Category': main_cat,
+            'Sub Category': sub_name,
+            'Value': max(0, sub_val),
+            'Pct of Main': sub_val / main_val * 100,
+            'Pct of Total': sub_val / total * 100
+        })
+
+nested_df = pd.DataFrame(nested_data)
+
+fig = px.bar(
+    nested_df,
+    x='Main Category',
+    y='Value',
+    color='Sub Category',
+    title=f"{data_type} - Hierarchical Nested View",
+    barmode='stack',
+    height=600
+)
+fig.show()""", language='python')
 
     def render_waterfall_chart(self, df: pd.DataFrame, data_type: str, show_percentages: bool):
         st.markdown("### 💧 Waterfall Chart - Cumulative Build-Up")
@@ -283,33 +384,105 @@ class PartToWhole:
         **Key Features:** Shows incremental addition, clear path from zero to total.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+impoer pandas as pd
+                
+cat_col = df.columns[0]
+val_col = df.columns[1]
+total = df[val_col].sum()
+
+categories = df[cat_col].tolist()
+values = df[val_col].tolist()
+
+# Waterfall structure
+measures = ["absolute"] + ["relative"] * len(categories) + ["total"]
+x_labels = ["Start"] + categories + ["Total"]
+y_values = [0] + values + [total]
+
+fig = go.Figure(go.Waterfall(
+    orientation="v",
+    measure=measures,
+    x=x_labels,
+    y=y_values,
+    textposition="outside",
+    text=["" if i == 0 or i == len(
+        x_labels)-1 else f"+{v:,}" for i, v in enumerate(y_values)],
+    connector=dict(line=dict(color="rgb(63, 63, 63)", width=2)),
+))
+
+fig.update_layout(
+    title=f"{data_type} - How Components Build the Total",
+    showlegend=False,
+    height=600,
+    xaxis_title="",
+    yaxis_title=val_col
+)
+
+if show_percentages:
+    cumulative = 0
+    for i, val in enumerate(values):
+        cumulative += val
+        pct = cumulative / total * 100
+        fig.add_annotation(
+            x=categories[i],
+            y=cumulative - val / 2,
+            text=f"{pct:.1f}%",
+            showarrow=False,
+            font=dict(color="black", size=11),
+            bgcolor="rgba(255,255,255,0.7)"
+        )
+fig.show()
+""", language='python')
+
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Part-to-Whole Visualizations")
-        col1, col2 = st.columns(2)
+        st.markdown("### 🧩 Understanding Part-to-Whole Relationships")
+        st.markdown("""
+        Part-to-whole analysis explains how individual components combine to form
+        a complete entity. It emphasizes **proportion, balance, and relative importance**
+        over absolute values.
+        """)
 
-        with col1:
-            st.markdown("""
-            **Proportional Clarity**
-            - Instantly see relative contribution
-            - Parts always sum to meaningful whole
-            """)
-            st.markdown("""
-            **Hierarchical Support**
-            - Handles nested breakdowns
-            - Shows both sub- and grand totals
-            """)
+        st.markdown("#### 📐 Clear Proportional Relationships")
+        st.markdown("""
+        Each component is represented relative to the total.
+        Visual size directly reflects contribution, ensuring proportional accuracy
+        and preventing misinterpretation.
+        """)
 
-        with col2:
-            st.markdown("""
-            **Temporal Comparison**
-            - Track changing composition over time
-            - Spot rising/falling segments
-            """)
-            st.markdown("""
-            **Cumulative Insight**
-            - Waterfall shows build-up sequence
-            - Highlights key contributors
-            """)
+        st.markdown("####👀 Immediate Visual Comparison of Parts")
+        st.markdown("""
+        Part-to-whole views allow viewers to instantly compare components:
+        - Identify dominant parts  
+        - Spot minor contributors  
+        - Understand balance within the system  
+        """)
+
+        st.markdown("#### 🔢 Total Always Equals a Complete Whole")
+        st.markdown("""
+        All components together always sum to 100% or represent a complete system,
+        such as total revenue, total users, or total capacity.
+        This constraint provides critical interpretive context.
+        """)
+
+        st.markdown("#### ⭐ Showing Relative Importance of Components")
+        st.markdown("""
+        Relative size highlights importance.
+        Larger components often deserve focused attention, while smaller ones may
+        signal niche value or growth opportunities.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Part-to-Whole Analysis Matters")
+        st.markdown("""
+        By simplifying complex distributions, part-to-whole analysis improves:
+        - Communication clarity  
+        - Stakeholder alignment  
+        - Priority setting and decision-making  
+        """)
 
     def render_examples(self, dataset_type: str, df: pd.DataFrame):
         st.markdown("### 💡 Real-world Examples")
@@ -331,11 +504,6 @@ class PartToWhole:
                     unit = df.columns[1]
                     st.success(f"**Current Total:** {total:,} {unit}")
 
-    def render_data_table(self, df: pd.DataFrame):
-        st.markdown("### 📋 Current Part-to-Whole Data")
-        st.dataframe(df.sort_values('Percentage', ascending=False),
-                     width='stretch')
-
     def output(self):
         self.render_header()
         chart_type, dataset_type, num_categories, show_percentages = self.render_configuration()
@@ -351,6 +519,5 @@ class PartToWhole:
         if chart_type in chart_map:
             chart_map[chart_type]()
 
-        self.render_key_characteristics()
         self.render_examples(dataset_type, df)
-        self.render_data_table(df)
+        self.render_key_characteristics()

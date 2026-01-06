@@ -7,8 +7,6 @@ import pandas as pd
 class Distribution:
 
     def __init__(self):
-        st.set_page_config(
-            page_title="Distribution Visualizations", layout="wide")
         self.title = "📊 Distribution Visualizations Dashboard"
         self.chart_types = [
             "Histogram",
@@ -32,36 +30,6 @@ class Distribution:
         ### Purpose
         Distribution charts reveal **how values are spread across a range**, showing central tendencies, 
         variability, and the shape of data distributions.
-        """)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("""
-            **When to Use:**
-            - Understanding data spread and variability
-            - Identifying normal or skewed distributions
-            - Comparing distributions between groups
-            - Detecting outliers
-            - Statistical analysis and quality control
-            """)
-
-        with col2:
-            st.markdown("""
-            **Key Characteristics:**
-            - Shows data spread
-            - Reveals distribution shape
-            - Identifies central tendency
-            - Highlights outliers and skewness
-            """)
-
-        st.markdown("""
-        **Supported Charts:**
-        - **Histogram** – Binned frequency distribution
-        - **Violin Plot** – Density + summary statistics
-        - **Dot Plot** – Individual data points stacked
-        - **Ridge Plot** – Overlapping density curves
-        - **Strip Plot** – Jittered points with categorical comparison
-        - **Bubble Timeline** – Time-based distribution with size encoding
         """)
 
     def render_configuration(self):
@@ -145,7 +113,29 @@ class Distribution:
             bargap=0.05,
             height=600
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import numpy as np
+
+fig = go.Figure()
+fig.add_trace(go.Histogram(
+    x=df["Value"],
+    nbinsx=30,
+    marker_color='#3498db',
+    opacity=0.7
+))
+fig.update_layout(
+    title=f"Histogram – {title}",
+    xaxis_title=title,
+    yaxis_title="Count",
+    bargap=0.05,
+    height=600
+)
+fig.show()           
+""", language="python")
 
     def create_violin(self, df: pd.DataFrame, title: str):
         if "Category" in df.columns:
@@ -167,7 +157,34 @@ class Distribution:
             yaxis_title=title,
             height=600
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import numpy as np
+
+if "Category" in df.columns:
+    categories = df["Category"].unique()
+    fig = go.Figure()
+    for cat in categories:
+        fig.add_trace(go.Violin(
+            y=df[df["Category"] == cat]["Value"],
+            name=cat,
+            box_visible=True,
+            meanline_visible=True
+        ))
+else:
+    fig = go.Figure(
+        go.Violin(y=df["Value"], box_visible=True, meanline_visible=True))
+
+fig.update_layout(
+    title=f"Violin Plot – {title}",
+    yaxis_title=title,
+    height=600
+)
+fig.show()           
+""", language="python")
 
     def create_dot_plot(self, df: pd.DataFrame, title: str):
         fig = go.Figure()
@@ -194,7 +211,39 @@ class Distribution:
             height=600,
             showlegend="Category" in df.columns
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import numpy as np
+
+fig = go.Figure()
+if "Category" in df.columns:
+    for cat in df["Category"].unique():
+        subset = df[df["Category"] == cat]
+        fig.add_trace(go.Scatter(
+            x=subset["Value"],
+            y=[cat] * len(subset),
+            mode='markers',
+            marker=dict(size=8, opacity=0.6),
+            name=cat
+        ))
+else:
+    fig.add_trace(go.Scatter(
+        x=df["Value"],
+        y=np.zeros(len(df)),
+        mode='markers',
+        marker=dict(size=8)
+    ))
+
+fig.update_layout(
+    title=f"Dot Plot – {title}",
+    height=600,
+    showlegend="Category" in df.columns
+)
+fig.show()           
+""", language="python")
 
     def create_ridge_plot(self, df: pd.DataFrame, title: str):
         if "Category" not in df.columns:
@@ -233,7 +282,46 @@ class Distribution:
             height=600,
             showlegend=True
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import numpy as np
+
+categories = sorted(df["Category"].unique())
+fig = go.Figure()
+
+colors = ["#3498db", "#e74c3c", "#27ae60", "#f39c12"]
+for i, cat in enumerate(categories):
+    subset = df[df["Category"] == cat]["Value"]
+    hist_data = np.histogram(subset, bins=40)
+    hist_x = (hist_data[1][:-1] + hist_data[1][1:]) / 2
+    hist_y = hist_data[0]
+    hist_y_smooth = np.convolve(hist_y, np.ones(5)/5, mode='same')
+
+    fig.add_trace(go.Scatter(
+        x=hist_x,
+        y=hist_y_smooth + i,
+        fill='tozeroy',
+        mode='lines',
+        name=cat,
+        fillcolor=colors[i % len(colors)],
+        opacity=0.6
+    ))
+
+fig.update_layout(
+    title=f"Ridge Plot – {title} by Category",
+    yaxis=dict(
+        tickmode='array',
+        tickvals=list(range(len(categories))),
+        ticktext=categories
+    ),
+    height=600,
+    showlegend=True
+)
+fig.show()           
+""", language="python")
 
     def create_strip_plot(self, df: pd.DataFrame, title: str):
         if "Category" not in df.columns:
@@ -258,7 +346,33 @@ class Distribution:
             xaxis_title=title,
             height=600
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import numpy as np
+
+fig = go.Figure()
+categories = df["Category"].unique()
+for i, cat in enumerate(categories):
+    subset = df[df["Category"] == cat]["Value"]
+    jitter = np.random.uniform(-0.2, 0.2, len(subset))
+    fig.add_trace(go.Scatter(
+        x=subset + jitter,
+        y=[cat] * len(subset),
+        mode='markers',
+        marker=dict(size=8, opacity=0.7),
+        name=cat
+    ))
+
+fig.update_layout(
+    title=f"Strip Plot – {title} by Category",
+    xaxis_title=title,
+    height=600
+)
+fig.show()           
+""", language="python")
 
     def create_bubble_timeline(self, df: pd.DataFrame, title: str):
         fig = go.Figure()
@@ -290,7 +404,44 @@ class Distribution:
             yaxis_title=title,
             height=600
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import numpy as np
+
+fig = go.Figure()
+sizes = np.sqrt(df["Value"]) * 2
+
+if "Date" not in df.columns:
+    df["Date"] = pd.date_range("2025-01-01", periods=len(df))
+
+fig.add_trace(go.Scatter(
+    x=df["Date"],
+    y=df["Value"],
+    mode='markers',
+    marker=dict(
+        size=sizes,
+        sizemode='area',
+        sizeref=2. * max(sizes) / (80**2),
+        sizemin=4,
+        color=df["Value"],
+        colorscale='Viridis',
+        showscale=True
+    ),
+    text=df["Value"].round(0),
+    hoverinfo='text+x'
+))
+
+fig.update_layout(
+    title=f"Bubble Timeline – {title} Over Time<br><sub>Bubble size = Order Value</sub>",
+    xaxis_title="Date",
+    yaxis_title=title,
+    height=600
+)
+fig.show()           
+""", language="python")
 
     def render_chart(self, chart_type: str, scenario: str, n_samples: int):
         st.markdown(f"### {chart_type}: {scenario}")
@@ -300,21 +451,89 @@ class Distribution:
         title = data_result[1]
 
         if chart_type == "Histogram":
-            fig = self.create_histogram(df, title)
+            self.create_histogram(df, title)
         elif chart_type == "Violin Plot":
-            fig = self.create_violin(df, title)
+            self.create_violin(df, title)
         elif chart_type == "Dot Plot":
-            fig = self.create_dot_plot(df, title)
+            self.create_dot_plot(df, title)
         elif chart_type == "Ridge Plot":
-            fig = self.create_ridge_plot(df, title)
+            self.create_ridge_plot(df, title)
         elif chart_type == "Strip Plot":
-            fig = self.create_strip_plot(df, title)
+            self.create_strip_plot(df, title)
         else:  # Bubble Timeline
-            fig = self.create_bubble_timeline(df, title)
+            self.create_bubble_timeline(df, title)
 
-        st.plotly_chart(fig, width='stretch')
+    def render_examples(self):
+        st.markdown("### 💡 Real-world Examples")
+
+        examples = {
+            "Quality Control": "Distribution of product measurements",
+            "Human Resources": "Salary distributions across the organization",
+            "Education": "Test score distributions across students",
+            "Healthcare": "Patient wait times distribution",
+            "E-commerce": "Order value distribution"
+        }
+
+        for example, description in examples.items():
+            with st.expander(f"💭 {example}"):
+                st.write(description)
+
+    def render_key_characteristics(self):
+        st.markdown("### 📊 Understanding Data Distribution")
+
+        st.markdown("""
+        Distribution analysis examines **how data points are spread across a range of values**.
+        It focuses on the shape, concentration, and variability of data.
+        """)
+
+        st.markdown("#### 📈 Shows Data Spread")
+        st.markdown("""
+        Visualizes how values are dispersed, helping to identify:
+        - Wide vs narrow ranges  
+        - Dense vs sparse regions  
+        - Variability in measurements
+        """)
+
+        st.markdown("#### 🎯 Reveals Distribution Shape")
+        st.markdown("""
+        Determines the underlying shape of the data:
+        - Symmetric vs skewed  
+        - Normal, uniform, exponential, or custom patterns  
+        - Helps select appropriate statistical tests and models
+        """)
+
+        st.markdown("#### ⚖️ Identifies Central Tendency")
+        st.markdown("""
+        Highlights key measures like:
+        - Mean  
+        - Median  
+        - Mode  
+
+        Provides insight into where most data points are concentrated.
+        """)
+
+        st.markdown("#### 🚨 Highlights Outliers and Skewness")
+        st.markdown("""
+        Detects unusual or extreme values that may affect analysis:
+        - Outliers that deviate from patterns  
+        - Skewness indicating asymmetry  
+        - Guides data cleaning and transformation decisions
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Distribution Analysis Matters")
+        st.markdown("""
+        Understanding distribution is critical for:
+        - Statistical modeling  
+        - Feature engineering  
+        - Detecting anomalies  
+        - Making data-driven decisions  
+        """)
 
     def output(self):
         self.render_header()
         chart_type, scenario, num_samples = self.render_configuration()
         self.render_chart(chart_type, scenario, num_samples)
+        self.render_examples()
+        self.render_key_characteristics()

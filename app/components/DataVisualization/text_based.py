@@ -28,32 +28,6 @@ class TextBased:
         when exact values matter more than visual patterns.
         """)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("""
-            **When to Use:**
-            - Presenting precise numerical values
-            - Comparing many detailed metrics
-            - Creating reference materials
-            - Displaying specifications or parameters
-            - When exact values are critical
-            """)
-
-        with col2:
-            st.markdown("""
-            **Key Characteristics:**
-            - Emphasizes precision over pattern
-            - Supports detailed comparison
-            - Enables sorting and filtering
-            - Preserves exact values
-            """)
-
-        st.markdown("""
-        **Supported Visualizations:**
-        - **Table** – Clean, structured data presentation with optional sorting
-        - **Highlight Table** – Color-coded cells to emphasize high/low values or categories
-        """)
-
     def render_configuration(self):
         st.markdown("### ⚙️ Visualization Settings")
         col1, col2 = st.columns([2, 2])
@@ -186,7 +160,72 @@ class TextBased:
         else:
             self.render_highlight_table(df, scenario)
 
+    def render_examples(self):
+        st.markdown("### 💡 Real-world Examples")
+
+        examples = {
+            "Financial Statements": "Detailed P&L and balance sheets",
+            "Product Specifications": "Technical parameters comparison",
+            "Employee Directory": "Contact information and roles",
+            "Pricing Tables": "Plan features and pricing comparison",
+            "Research Data": "Experimental results and measurements"
+        }
+
+        for example, description in examples.items():
+            with st.expander(f"💭 {example}"):
+                st.write(description)
+
+    def render_key_characteristics(self):
+        st.markdown("### 📋 Understanding Text-Based Analysis")
+
+        st.markdown("""
+        Text-based analysis presents data through **tables and structured text**.
+        It prioritizes precision, accuracy, and detailed comparison over visual abstraction.
+        """)
+
+        st.markdown("#### 🎯 Emphasizes Precision Over Pattern")
+        st.markdown("""
+        Text-based representations preserve exact values.
+        They avoid visual approximation and ensure numerical accuracy.
+        """)
+
+        st.markdown("#### 🔍 Supports Detailed Comparison")
+        st.markdown("""
+        Tables enable side-by-side evaluation across multiple attributes,
+        making subtle differences easy to detect.
+        """)
+
+        st.markdown("#### ↕️ Enables Sorting and Filtering")
+        st.markdown("""
+        Interactive text-based views allow users to:
+        - Sort values  
+        - Filter records  
+        - Search specific entries  
+
+        This supports deep exploration and validation.
+        """)
+
+        st.markdown("#### ✅ Preserves Exact Values")
+        st.markdown("""
+        Every value remains explicit and auditable.
+        This is critical for compliance, finance, debugging, and data verification.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Text-Based Analysis Matters")
+        st.markdown("""
+        Text-based analysis provides reliability and trust.
+        It is essential for:
+        - Financial and regulatory reporting  
+        - Data quality checks  
+        - Auditing and reconciliation  
+        - Decision confirmation  
+        """)
+
     def output(self):
         self.render_header()
         chart_type, scenario = self.render_configuration()
         self.render_chart(chart_type, scenario)
+        self.render_examples()
+        self.render_key_characteristics()

@@ -194,12 +194,38 @@ class Geospatial:
         **Key Features:** Color intensity reflects data magnitude; intuitive for spatial trends.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import plotly.express as px
-fig = px.choropleth(df, locations='state', locationmode='USA-states',
-                    color='value', scope='usa', color_continuous_scale='Viridis')
-fig.show()
-        ''', language='python')
+                
+numeric_cols = df.select_dtypes(include=[np.number]).columns
+value_col = st.selectbox("Color by", numeric_cols, index=0)
+
+if scope == "US States":
+    fig = px.choropleth(
+        df,
+        locations='state',
+        locationmode='USA-states',
+        color=value_col,
+        scope='usa',
+        color_continuous_scale='Viridis',
+        title=f"{data_type} - {value_col} by US State"
+    )
+else:  # World or EU
+    fig = px.choropleth(
+        df,
+        locations='country' if 'country' in df.columns else 'state',
+        locationmode='country names',
+        color=value_col,
+        color_continuous_scale='Plasma',
+        title=f"{data_type} - {value_col} by Country"
+    )
+
+fig.update_layout(margin={"r": 0, "t": 40, "l": 0, "b": 0})
+fig.show()''', language='python')
 
     def render_bubble_map(self, df: pd.DataFrame, data_type: str, scope: str):
         st.markdown("### 💭 Bubble Map - Proportional Symbols")
@@ -243,7 +269,12 @@ fig.show()
         **Key Features:** Size = quantity, color = another variable (e.g., growth).
         """)
 
-        st.code('''
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
+        st.code('''import plotly.express as px
+                
 fig = px.scatter_geo(df, lat='lat', lon='lon', size='revenue', color='growth',
                      hover_name='state', scope='north america')
 fig.show()
@@ -287,8 +318,13 @@ fig.show()
         
         **Key Features:** Exact coordinates, great for stores, hospitals, incidents.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
 
         st.code('''
+import plotly.express as px
+                
 fig = px.scatter_geo(df_points, lat='lat', lon='lon', size='value',
                      hover_name='location', scope='usa')
 fig.show()
@@ -347,8 +383,13 @@ fig.show()
         **Key Features:** Each region gets equal space — avoids bias from large land areas.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import plotly.graph_objects as go
+                
 fig = go.Figure()
 # Add scattered points on grid with size/color encoding
 fig.add_trace(go.Scatter(x=[x], y=[y], marker=dict(size=scaled_value)))
@@ -357,36 +398,57 @@ fig.show()
         ''', language='python')
 
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Geospatial Visualizations")
-        col1, col2 = st.columns(2)
+        st.markdown(
+            "### 🗺️ Understanding Geospatial and Location-Based Analysis")
+        st.markdown("""
+        Geospatial analysis connects data to real-world locations, allowing analysts to
+        leverage **spatial intuition** to uncover patterns, clusters, and regional differences.
+        """)
 
-        with col1:
-            st.markdown("""
-            **Spatial Intuition**
-            - Leverages natural geographic knowledge
-            - Immediate pattern recognition
-            - Context-rich storytelling
-            """)
-            st.markdown("""
-            **Regional Analysis**
-            - Reveals clusters, hotspots, disparities
-            - Identifies spatial correlations
-            - Supports targeted interventions
-            """)
+        st.markdown("#### 🧠 Leveraging Spatial Intuition")
+        st.markdown("""
+        People naturally understand space, distance, and proximity.
+        Geospatial visualizations convert abstract data into familiar geographic forms,
+        making insights faster to interpret and easier to communicate.
+        """)
 
-        with col2:
-            st.markdown("""
-            **Decision Support**
-            - Informs location-based strategies
-            - Optimizes resource allocation
-            - Enables territorial planning
-            """)
-            st.markdown("""
-            **Scalability**
-            - From local neighborhoods to global
-            - Multiple map types for different insights
-            - Interactive exploration
-            """)
+        st.markdown("####📍 Showing Geographic Patterns and Clusters")
+        st.markdown("""
+        Mapping data reveals spatial clustering—areas where values or events concentrate.
+
+        Examples include:
+        - High-demand regions  
+        - Risk or incident hotspots  
+        - Population or infrastructure density  
+        """)
+
+        st.markdown("#### ⚖️ Revealing Regional Disparities")
+        st.markdown("""
+        Geospatial views expose differences between regions, such as performance gaps,
+        economic inequality, or uneven resource distribution.
+
+        This enables side-by-side regional comparison and targeted analysis.
+        """)
+
+        st.markdown("#### 📌 Enabling Location-Based Decision Making")
+        st.markdown("""
+        Location-aware insights support decisions that depend on **where** something happens.
+
+        Common applications:
+        - Site selection  
+        - Logistics and routing  
+        - Market expansion  
+        - Urban and infrastructure planning  
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Geospatial Analysis Matters")
+        st.markdown("""
+        Embedding data in physical space transforms metrics into actionable intelligence.
+        Geospatial analysis enables smarter resource allocation, risk mitigation,
+        and geographically informed strategies.
+        """)
 
     def render_examples(self, dataset_type: str, map_type: str, region_scope: str):
         st.markdown("### 💡 Real-world Examples")
@@ -407,10 +469,6 @@ fig.show()
                     st.success(f"**Current Map Type:** {map_type}")
                     st.info(f"**Region Scope:** {region_scope}")
 
-    def render_data_table(self, df: pd.DataFrame):
-        st.markdown("### 📊 Underlying Geospatial Data")
-        st.dataframe(df, width='stretch')
-
     def output(self):
         self.render_header()
         map_type, dataset_type, region_scope, show_legend = self.render_configuration()
@@ -427,6 +485,5 @@ fig.show()
         if map_type in chart_map:
             chart_map[map_type]()
 
-        self.render_key_characteristics()
         self.render_examples(dataset_type, map_type, region_scope)
-        self.render_data_table(df)
+        self.render_key_characteristics()

@@ -28,32 +28,6 @@ class Anomaly:
         They're essential for quality control, fraud detection, and system monitoring.
         """)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("""
-            **When to Use:**
-            - Quality control in manufacturing
-            - Fraud detection in financial transactions
-            - System health monitoring
-            - Detecting unusual patterns in data
-            - Identifying process variations
-            """)
-
-        with col2:
-            st.markdown("""
-            **Key Characteristics:**
-            - Highlights deviations from normal
-            - Uses statistical thresholds
-            - Enables quick identification of problems
-            - Supports proactive intervention
-            """)
-
-        st.markdown("""
-        **Supported Charts:**
-        - **Control Chart** – Monitors process stability with UCL/LCL bounds (X-bar or Individual)
-        - **Time Series Anomaly** – Highlights outliers in sequential data using statistical or isolation methods
-        """)
-
     def render_configuration(self):
         st.markdown("### ⚙️ Visualization Settings")
         col1, col2, col3 = st.columns([2, 2, 2])
@@ -160,7 +134,57 @@ class Anomaly:
             height=600,
             showlegend=True
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
+        st.code("""import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+                           
+fig = go.Figure()
+
+# Main data points
+fig.add_trace(go.Scatter(
+    x=df["Date"], y=df["Value"],
+    mode='lines+markers',
+    name='Measurements',
+    line=dict(color='#3498db'),
+    marker=dict(
+        size=8,
+        color=np.where(df["Anomaly"], '#e74c3c', '#3498db'),
+        line=dict(width=1, color='white')
+    )
+))
+
+# Control limits
+fig.add_trace(go.Scatter(x=df["Date"], y=df["UCL"], mode='lines',
+                name='UCL (+3σ)', line=dict(dash='dash', color='#e74c3c')))
+fig.add_trace(go.Scatter(x=df["Date"], y=df["LCL"], mode='lines',
+                name='LCL (-3σ)', line=dict(dash='dash', color='#e74c3c')))
+fig.add_trace(go.Scatter(x=df["Date"], y=df["Mean"], mode='lines',
+                name='Center Line', line=dict(color='#27ae60', width=2)))
+
+# Highlight anomalies
+anomalies = df[df["Anomaly"]]
+if not anomalies.empty:
+    fig.add_trace(go.Scatter(
+        x=anomalies["Date"], y=anomalies["Value"],
+        mode='markers',
+        name='Anomalies',
+        marker=dict(color='#e74c3c', size=12,
+                    symbol='x', line=dict(width=3))
+    ))
+
+fig.update_layout(
+    title=f"Control Chart – {process_name}<br><sub>Red points and dashed lines indicate out-of-control conditions</sub>",
+    xaxis_title="Date",
+    yaxis_title=process_name,
+    height=600,
+    showlegend=True
+)
+fig.show()""", language="python")
 
     def generate_time_series_anomalies(self, scenario: str, n_points: int, strength: float):
         np.random.seed(42)
@@ -219,7 +243,44 @@ class Anomaly:
             height=600,
             showlegend=True
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
+        st.code("""import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+                           
+fig = go.Figure()
+
+# Main line
+fig.add_trace(go.Scatter(
+    x=df["Timestamp"], y=df["Value"],
+    mode='lines',
+    name='Time Series',
+    line=dict(color='#3498db')
+))
+
+# Anomalies
+anomalies = df[df["Anomaly"]]
+if not anomalies.empty:
+    fig.add_trace(go.Scatter(
+        x=anomalies["Timestamp"], y=anomalies["Value"],
+        mode='markers',
+        name='Detected Anomalies',
+        marker=dict(color='#e74c3c', size=10,
+                    symbol='circle-open', line=dict(width=3))
+    ))
+
+fig.update_layout(
+    title=f"Time Series Anomaly Detection – {metric_name}<br><sub>Red circles highlight statistically significant outliers</sub>",
+    xaxis_title="Timestamp",
+    yaxis_title=metric_name,
+    height=600,
+    showlegend=True
+)
+fig.show()""", language="python")
 
     def render_chart(self, chart_type: str, scenario: str, n_points: int, strength: float):
         st.markdown(f"### {chart_type}: {scenario}")
@@ -227,13 +288,11 @@ class Anomaly:
         if chart_type == "Control Chart":
             df, name = self.generate_control_chart_data(
                 scenario, n_points, strength)
-            fig = self.create_control_chart(df, name)
+            self.create_control_chart(df, name)
         else:
             df, name = self.generate_time_series_anomalies(
                 scenario, n_points, strength)
-            fig = self.create_time_series_anomaly(df, name)
-
-        st.plotly_chart(fig, width='stretch')
+            self.create_time_series_anomaly(df, name)
 
         # Summary stats
         if chart_type == "Control Chart":
@@ -245,7 +304,77 @@ class Anomaly:
             st.info(
                 f"**Detected {len(anomalies)} anomalies** using rolling Z-score method")
 
+    def render_examples(self):
+        st.markdown("### 💡 Real-world Examples")
+
+        examples = {
+            "Manufacturing": "Detecting defective products in production",
+            "Cybersecurity": "Identifying unusual network traffic patterns",
+            "Finance": "Flagging suspicious transactions",
+            "Healthcare": "Monitoring vital signs for abnormal readings",
+            "Process Control": "Detecting when processes go out of specification"
+        }
+
+        for example, description in examples.items():
+            with st.expander(f"💭 {example}"):
+                st.write(description)
+
+    def render_key_characteristics(self):
+        st.markdown("### 🚨 Understanding Anomaly Analysis")
+
+        st.markdown("""
+        Anomaly analysis identifies **unexpected deviations** from normal behavior.
+        Its purpose is not explanation, but **early detection and response**.
+        """)
+
+        st.markdown("#### 📉 Highlights Deviations from Normal")
+        st.markdown("""
+        Anomalies are detected relative to a baseline such as:
+        - Historical patterns  
+        - Seasonal trends  
+        - Learned system behavior  
+
+        Anything that significantly deviates is flagged.
+        """)
+
+        st.markdown("#### 📊 Uses Statistical Thresholds")
+        st.markdown("""
+        Detection commonly relies on:
+        - Standard deviation bands  
+        - Z-scores  
+        - Percentile thresholds  
+        - Model-based confidence intervals  
+
+        This ensures objectivity and consistency.
+        """)
+
+        st.markdown("#### ⚡ Enables Quick Identification of Problems")
+        st.markdown("""
+        Anomaly analysis filters noise and directs attention to
+        high-impact irregularities, speeding up investigation and resolution.
+        """)
+
+        st.markdown("#### 🛡️ Supports Proactive Intervention")
+        st.markdown("""
+        By detecting issues early, teams can act before failures occur,
+        reducing downtime, losses, and user impact.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Anomaly Analysis Matters")
+        st.markdown("""
+        Anomaly analysis transforms monitoring into an early warning system.
+        It is essential for:
+        - System reliability  
+        - Fraud detection  
+        - Data quality assurance  
+        - Operational resilience  
+        """)
+
     def output(self):
         self.render_header()
         chart_type, scenario, num_points, anomaly_strength = self.render_configuration()
         self.render_chart(chart_type, scenario, num_points, anomaly_strength)
+        self.render_examples()
+        self.render_key_characteristics()

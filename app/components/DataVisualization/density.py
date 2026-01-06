@@ -124,6 +124,10 @@ class Density:
         **Key Features:** Efficient with thousands of points, clear density gradients.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import matplotlib.pyplot as plt
 import numpy as np
@@ -165,6 +169,10 @@ plt.show()
         
         **Key Features:** Professional appearance, clear level sets.
         """)
+
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
 
         st.code('''
 import seaborn as sns
@@ -209,6 +217,10 @@ plt.show()
         **Key Features:** Intuitive, supports color/size encoding for intensity.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import matplotlib.pyplot as plt
 import numpy as np
@@ -228,32 +240,62 @@ plt.show()
         ''', language='python')
 
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Density Visualizations")
-        col1, col2, col3 = st.columns(3)
+        st.markdown("### 🎯 Understanding Density and Concentration in Data")
+        st.markdown("""
+As datasets grow in size, individual data points become less informative.
+Density analysis focuses on **where data accumulates**, helping analysts
+identify meaningful patterns within large volumes of information.
+""")
 
-        with col1:
-            st.markdown("""
-            **Reveals Concentration Patterns**
-            - Shows where data clusters
-            - Identifies hotspots and voids
-            - Highlights spatial relationships
-            """)
+        st.markdown("#### 📍 Revealing Concentration Patterns")
+        st.markdown("""
+        Density visualizations highlight regions where data points cluster together.
+        These clusters often represent dominant behaviors, frequent events, or
+        high-demand areas.
 
-        with col2:
-            st.markdown("""
-            **Handles Large Datasets**
-            - Manages thousands of points
-            - Reduces visual clutter
-            - Maintains clarity at scale
-            """)
+        Instead of examining each point individually, analysts can quickly identify
+        hotspots and areas of interest.
+        """)
 
-        with col3:
-            st.markdown("""
-            **Shows Intensity Gradients**
-            - Smooth color transitions
-            - Clear density levels
-            - Visual hierarchy
-            """)
+        st.markdown("#### 📊 Handling Large Datasets Effectively")
+        st.markdown("""
+        Large datasets often overwhelm traditional scatter plots.
+        Density-based techniques aggregate data into regions, making them easier
+        to interpret at scale.
+
+        Common approaches include:
+        - Heatmaps  
+        - Hexbin plots  
+        - Kernel density estimation (KDE)  
+        """)
+
+        st.markdown("#### 🌈 Showing Gradients of Intensity")
+        st.markdown("""
+        Rather than binary classifications, density analysis displays **continuous
+        gradients of intensity**. These gradients reveal how concentration changes
+        smoothly across space or value ranges.
+
+        This helps analysts understand transitions, boundaries, and probabilistic behavior.
+        """)
+
+        st.markdown("#### 🧹 Reducing Visual Clutter from Overlapping Points")
+        st.markdown("""
+        Overlapping data points can hide important patterns.
+        Density techniques replace overlapping markers with color intensity or contours,
+        resulting in cleaner and more interpretable visuals—without losing information.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Density Analysis Matters")
+        st.markdown("""
+        Density-focused views improve pattern recognition, anomaly detection,
+        and decision-making across domains such as:
+        - Geospatial analytics  
+        - User behavior analysis  
+        - System performance monitoring  
+        - Market segmentation  
+""")
 
     def render_examples(self, chart_type: str, dataset_type: str):
         st.markdown("### 💡 Real-world Examples")
@@ -287,5 +329,5 @@ plt.show()
         if chart_type in chart_map:
             chart_map[chart_type](df, dataset_type)
 
-        self.render_key_characteristics()
         self.render_examples(chart_type, dataset_type)
+        self.render_key_characteristics()

@@ -177,19 +177,47 @@ class TimeSeries:
 
         st.plotly_chart(fig, width='stretch')
 
-        st.markdown("### 📊 Key Metrics")
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Period Start", df[date_col].min().strftime("%b %d, %Y"))
-        col2.metric("Period End", df[date_col].max().strftime("%b %d, %Y"))
-        col3.metric("Average", f"{df[value_col].mean():,.1f}")
-        col4.metric(
-            "Trend", "↗️ Upward" if df[value_col].iloc[-1] > df[value_col].mean() else "↘️ Downward")
-
         st.markdown("""
         **When to use:** Continuous metrics over time — sales, sensor data, stock prices.
         
         **Key Features:** Trend lines, moving averages, optional short-term forecast.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code(f"""import plotly.express as px
+import pandas as pd
+import numpy as np
+                
+numeric_cols = df.select_dtypes(include=[np.number]).columns
+value_col = st.selectbox("Value to Plot", numeric_cols, index=0)
+date_col = 'Date' if 'Date' in df.columns else 'Timestamp'
+
+fig = px.line(df, x=date_col, y=value_col,
+                title=f"{data_type} - {value_col} Over Time")
+
+if show_forecast:
+    x_num = np.arange(len(df))
+    trend = np.polyfit(x_num, df[value_col], 1)
+    trend_line = np.poly1d(trend)(x_num)
+    future_x = np.arange(len(df), len(df) + 30)
+    future_y = np.poly1d(trend)(future_x)
+
+    fig.add_scatter(x=df[date_col], y=trend_line, mode='lines',
+                    name='Trend Line', line=dict(dash='dash', color='orange'))
+    future_dates = pd.date_range(start=df[date_col].iloc[-1] + pd.Timedelta(
+        days=1), periods=30, freq=df[date_col].diff().median())
+    fig.add_scatter(x=future_dates, y=future_y, mode='lines',
+                    name='30-Day Forecast', line=dict(dash='dot', color='red'))
+
+# Moving average
+if len(df) > 7:
+    ma = df[value_col].rolling(window=7).mean()
+    fig.add_scatter(x=df[date_col], y=ma, mode='lines',
+                    name='7-Period MA', line=dict(color='green'))
+
+fig.show()
+                """, language="python")
 
     def render_gantt_chart(self, df: pd.DataFrame, data_type: str):
         st.markdown("### 📅 Gantt Chart - Project Timeline")
@@ -232,6 +260,18 @@ class TimeSeries:
         
         **Key Features:** Clear duration, overlaps, progress overlay.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.express as px
+fig = px.timeline(
+    tasks_df, x_start="Start", x_end="End", y="Task",
+    color="Progress" if "Progress" in tasks_df.columns else None,
+    title=f"{data_type} - Project Gantt Chart",
+    color_continuous_scale="Blues"
+)
+fig.update_yaxes(autorange="reversed")
+fig.show()""", language="python")
 
     def render_horizon_chart(self, df: pd.DataFrame, data_type: str):
         st.markdown("### 🌅 Horizon Chart - Compact Long-Term View")
@@ -269,6 +309,39 @@ class TimeSeries:
         
         **Key Features:** Stacked bands compress vertical space while preserving detail.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import numpy as np
+import matplotlib.pyplot as plt
+                
+numeric_cols = df.select_dtypes(include=[np.number]).columns
+value_col = st.selectbox("Value for Horizon", numeric_cols, index=0)
+date_col = 'Date' if 'Date' in df.columns else 'Timestamp'
+
+data = df[value_col].values
+dates = df[date_col]
+normalized = (data - data.mean()) / data.std()
+
+fig, axes = plt.subplots(4, 1, figsize=(14, 8), sharex=True)
+colors = ['#457b9d', '#1d3557', '#a8dadc', '#f1faee']
+
+for i in range(4):
+    lower = i * 1.5
+    upper = (i + 1) * 1.5
+    band = np.clip(normalized, lower, upper) - lower
+
+    axes[i].fill_between(dates, 0, band, color=colors[i], alpha=0.9)
+    axes[i].set_ylim(0, 1.5)
+    axes[i].set_ylabel(f"{lower:+.1f} to {upper:+.1f}σ")
+    axes[i].grid(alpha=0.3)
+
+axes[-1].set_xlabel("Date")
+fig.suptitle(f"{data_type} - Horizon Chart ({value_col})")
+plt.tight_layout()
+
+st.pyplot(fig)
+plt.close(fig)""", language="python")
 
     def render_timetable(self, df: pd.DataFrame, data_type: str):
         st.markdown("### 🕒 Timetable - Key Events & Milestones")
@@ -320,34 +393,75 @@ class TimeSeries:
         
         **Key Features:** Clean event timeline with context.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import matplotlib.pyplot as plt
+import pandas as pd
+                
+events_df = pd.DataFrame(events)
+fig, ax = plt.subplots(figsize=(12, len(events_df) * 0.6 + 2))
+for i, (_, event) in enumerate(events_df.iterrows()):
+    time = pd.to_datetime(event['Time'])
+    ax.plot(time, i, 'o', markersize=12, color='teal')
+    ax.text(time, i + 0.2, event['Event'],
+            ha='center', va='bottom', fontsize=10)
+ax.set_yticks([])
+ax.set_title(f"{data_type} - Event Timetable")
+ax.grid(axis='x', alpha=0.3)
+st.pyplot(fig)
+plt.close(fig)
+""", language="python")
 
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Time Series Visualizations")
-        col1, col2 = st.columns(2)
+        st.markdown("### ⏱️ Understanding Time Series Analysis")
 
-        with col1:
-            st.markdown("""
-            **Chronological Order**
-            - Time always progresses left to right
-            - Preserves sequence and causality
-            """)
-            st.markdown("""
-            **Pattern Detection**
-            - Reveals trends, cycles, seasonality
-            - Highlights anomalies and shifts
-            """)
+        st.markdown("""
+        Time series analysis examines data indexed by time, where the **order of observations**
+        is essential. This structure enables pattern detection, stability analysis,
+        and forecasting.
+        """)
 
-        with col2:
-            st.markdown("""
-            **Forecasting Ready**
-            - Supports trend extrapolation
-            - Enables predictive modeling
-            """)
-            st.markdown("""
-            **Real-Time Capable**
-            - Ideal for live monitoring
-            - Works with streaming data
-            """)
+        st.markdown("#### 📅 Time Is Always on One Axis")
+        st.markdown("""
+        Time is explicitly represented on one axis, preserving chronological order.
+        This ensures trends, shifts, and patterns are interpreted correctly.
+        """)
+
+        st.markdown("#### 📉 Showing Continuity or Breaks in Data")
+        st.markdown("""
+        Time series reveal whether behavior is smooth or disrupted.
+
+        - **Continuity** suggests stability  
+        - **Breaks** may indicate anomalies, regime changes, or external shocks  
+        """)
+
+        st.markdown("#### 🔁 Revealing Cyclical Patterns")
+        st.markdown("""
+        Cyclical patterns such as seasonality and periodicity are common in time series.
+        Identifying these cycles helps distinguish expected behavior from true anomalies.
+        """)
+
+        st.markdown("#### 🔮 Supporting Forecasting and Prediction")
+        st.markdown("""
+        Time-ordered data enables forecasting future values using historical patterns.
+
+        Common techniques include:
+        - Moving averages  
+        - ARIMA and exponential smoothing  
+        - Machine learning-based forecasting  
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Time Series Analysis Matters")
+        st.markdown("""
+        Time series analysis converts historical data into predictive insight.
+        It supports:
+        - Planning and forecasting  
+        - Anomaly detection  
+        - Capacity and demand management  
+        """)
 
     def render_examples(self, dataset_type: str, df: pd.DataFrame):
         st.markdown("### 💡 Real-world Examples")
@@ -370,10 +484,6 @@ class TimeSeries:
                         f"**Period:** {df[date_col].min().strftime('%b %d, %Y')} → {df[date_col].max().strftime('%b %d, %Y')}")
                     st.info(f"**Data Points:** {len(df)}")
 
-    def render_data_table(self, df: pd.DataFrame):
-        st.markdown("### 📊 Time Series Data Sample")
-        st.dataframe(df.head(20), width='stretch')
-
     def output(self):
         self.render_header()
         chart_type, dataset_type, time_range, frequency, show_forecast = self.render_configuration()
@@ -392,4 +502,3 @@ class TimeSeries:
 
         self.render_key_characteristics()
         self.render_examples(dataset_type, df)
-        self.render_data_table(df)

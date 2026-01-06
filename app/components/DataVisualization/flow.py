@@ -124,35 +124,41 @@ class Flow:
             title_text=f"{data_type} - Sankey Flow Diagram", font_size=12)
         st.plotly_chart(fig, width='stretch')
 
-        total_flow = df['value'].sum()
-        st.markdown("### 📊 Flow Summary")
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Total Flow", f"{total_flow:,}")
-        col2.metric("Nodes", len(labels))
-        col3.metric("Connections", len(df))
-
-        # Top flows
-        top_flows = df.sort_values('value', ascending=False).head(5)
-        st.markdown("**Top 5 Flows:**")
-        for _, row in top_flows.iterrows():
-            pct = row['value'] / total_flow * 100
-            st.markdown(
-                f"**{row['source']} → {row['target']}**: {row['value']:,} ({pct:.1f}%)")
-
         st.markdown("""
         **When to use:** Visualizing magnitude of flows between categories (energy, money, materials).
         
         **Key Features:** Link width = flow volume, conservation of quantity.
         """)
 
-        st.code('''
-import plotly.graph_objects as go
-fig = go.Figure(go.Sankey(
-    node=dict(label=labels),
-    link=dict(source=sources_idx, target=targets_idx, value=values)
-))
-fig.show()
-        ''', language='python')
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code('''import plotly.graph_objects as go
+import pandas as pd
+                
+labels = list(set(df['source']) | set(df['target']))
+label_dict = {label: i for i, label in enumerate(labels)}
+
+fig = go.Figure(data=[go.Sankey(
+    node=dict(
+        pad=15,
+        thickness=20,
+        line=dict(color="black", width=0.5),
+        label=labels,
+        color="steelblue"
+    ),
+    link=dict(
+        source=[label_dict[s] for s in df['source']],
+        target=[label_dict[t] for t in df['target']],
+        value=df['value'],
+        label=[str(v) if show_values else "" for v in df['value']],
+        color="rgba(135, 206, 235, 0.6)"
+    )
+)])
+
+fig.update_layout(
+    title_text=f"{data_type} - Sankey Flow Diagram", font_size=12)
+fig.show()''', language='python')
 
     def render_alluvial_diagram(self, df: pd.DataFrame, data_type: str):
         st.markdown("### 🔄 Alluvial Diagram - Category Transitions")
@@ -218,6 +224,24 @@ fig.show()
         
         **Key Features:** Shows individual path volume, highlights common routes and drop-offs.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code('''import plotly.express as px
+import pandas as pd
+    alluvial_df = pd.DataFrame(paths, columns=stages)
+
+# Map Outcome (categorical) to numeric codes for coloring
+alluvial_df['Outcome_code'] = alluvial_df['Outcome'].astype(category').cat.codes
+
+fig = px.parallel_categories(
+    alluvial_df,
+    dimensions=stages,
+    color='Outcome_code',  # numeric for coloring
+    color_continuous_scale=px.colors.sequential.Inferno,
+    labels={'Outcome_code': 'Outcome'},
+    title=f"{data_type} - User Path Transitions")
+fig.show()''', language='python')
 
     def render_flow_chart(self, df: pd.DataFrame, data_type: str, show_values: bool):
         st.markdown("### 📋 Flow Chart - Process Network")
@@ -299,33 +323,92 @@ fig.show()
         **Key Features:** Directed edges, node centrality, bottleneck detection.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
+        st.code('''import matplotlib.pyplot as plt
+import networkx as nx
+import pandas as pd
+                
+G = nx.DiGraph()
+for _, row in df.iterrows():
+    G.add_edge(row['source'], row['target'], weight=row['value'])
+                
+pos = nx.spring_layout(G, k=4, iterations=100, seed=42)
+fig, ax = plt.subplots(figsize=(14, 10))
+# Nodes
+node_sizes = [G.degree(n, weight='weight') * 10 + 500 for n in G.nodes()]
+nx.draw_networkx_nodes(G, pos, node_size=node_sizes,
+                          node_color='skyblue', alpha=0.9, ax=ax)
+# Edges
+weights = [G[u][v]['weight'] for u, v in G.edges()]
+max_weight = max(weights) if weights else 1
+edge_widths = [w / max_weight * 10 for w in weights]
+nx.draw_networkx_edges(G, pos, width=edge_widths, alpha=0.7, edge_color='gray',
+                          arrows=True, arrowsize=20, arrowstyle='->', ax=ax)
+# Labels
+nx.draw_networkx_labels(G, pos, font_size=10,
+                            font_weight='bold', ax=ax)
+if show_values:
+    edge_labels = {(u, v): f"{G[u][v]['weight']:,}" for u, v in G.edges()}
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8, ax=ax)
+                
+ax.set_title(f"{data_type} - Directed Flow Network", fontsize=16)
+ax.axis('off')
+plt.tight_layout()
+plt.show()
+                ''', language='python')
+
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Flow Visualizations")
-        col1, col2 = st.columns(2)
+        st.markdown("### 🌊 Understanding Flow and Movement in Data")
+        st.markdown("""
+        Flow analysis visualizes how entities, resources, or information move through
+        a system. It focuses on **transitions, pathways, and dependencies** rather than
+        static values.
+        """)
 
-        with col1:
-            st.markdown("""
-            **Directionality**
-            - Clear source-to-destination movement
-            - Tracks progression through stages
-            """)
-            st.markdown("""
-            **Quantity Preservation**
-            - Total input = total output (conservation)
-            - Shows accumulation and dispersion
-            """)
+        st.markdown("#### ➡️ Showing Directionality of Movement")
+        st.markdown("""
+        Flow emphasizes where things originate and where they go.
+        Directionality clarifies source-to-destination relationships, revealing
+        how systems are structured.
+        """)
 
-        with col2:
-            st.markdown("""
-            **Bottleneck Detection**
-            - Identifies process constraints
-            - Highlights inefficiencies
-            """)
-            st.markdown("""
-            **Path Analysis**
-            - Reveals major and minor pathways
-            - Shows connection strength
-            """)
+        st.markdown("#### 🔄 Preserving Quantities Through Transitions")
+        st.markdown("""
+        A core principle of flow analysis is conservation.
+        The quantity entering a node is distributed across outgoing paths without
+        being arbitrarily created or lost, enabling accurate tracing.
+        """)
+
+        st.markdown("#### 🚧 Revealing Bottlenecks and Splits")
+        st.markdown("""
+        Flow highlights:
+        - **Bottlenecks**, where congestion or constraints occur  
+        - **Splits**, where paths diverge into multiple outcomes  
+
+        These insights expose inefficiencies and optimization opportunities.
+        """)
+
+        st.markdown("#### 🔗 Emphasizing Connection Strength")
+        st.markdown("""
+        Connection strength is typically encoded using thickness or intensity.
+        Stronger connections indicate dominant pathways, while weaker links represent
+        secondary or rare transitions.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Flow Analysis Matters")
+        st.markdown("""
+        Flow-based views make complex systems interpretable.
+        They support:
+        - Process optimization  
+        - Capacity planning  
+        - Root-cause analysis  
+        - System and pipeline design  
+        """)
 
     def render_examples(self, dataset_type: str, df: pd.DataFrame):
         st.markdown("### 💡 Real-world Examples")
@@ -346,11 +429,6 @@ fig.show()
                     total = df['value'].sum()
                     st.success(f"**Total Flow Volume:** {total:,} units")
 
-    def render_data_table(self, df: pd.DataFrame):
-        st.markdown("### 📊 Flow Data (Source → Target)")
-        st.dataframe(df.sort_values('value', ascending=False),
-                     width='stretch')
-
     def output(self):
         self.render_header()
         chart_type, dataset_type, flow_scale, show_values = self.render_configuration()
@@ -366,6 +444,5 @@ fig.show()
         if chart_type in chart_map:
             chart_map[chart_type]()
 
-        self.render_key_characteristics()
         self.render_examples(dataset_type, df)
-        self.render_data_table(df)
+        self.render_key_characteristics()

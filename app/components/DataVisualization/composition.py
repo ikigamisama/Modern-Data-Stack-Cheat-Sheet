@@ -120,14 +120,17 @@ class Composition:
         **Key Features:** Instantly recognizable, great for highlighting dominant segments.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
         st.code('''
 import plotly.express as px
+
 fig = px.pie(df, values='Value', names='Category',
              title='Composition Pie Chart',
              color_discrete_sequence=px.colors.qualitative.Set3)
 fig.update_traces(textposition='inside', textinfo='percent+label')
-fig.show()
-        ''', language='python')
+fig.show()''', language='python')
 
     def render_donut_chart(self, df: pd.DataFrame, data_type: str, show_percentages: bool):
         st.markdown("### 🍩 Donut Chart - Modern Composition")
@@ -150,13 +153,16 @@ fig.show()
         **Key Features:** Less visual clutter, center can display total or key metric.
         """)
 
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
         st.code('''
 import plotly.express as px
-fig = px.pie(df, values='Value', names='Category', hole=0.4,
-             title='Donut Chart')
+                
+fig = px.pie(df, values='Value', names='Category', hole=0.4, title='Donut Chart')
 fig.update_traces(textposition='inside', textinfo='percent+label')
-fig.show()
-        ''', language='python')
+fig.show()''', language='python')
 
     def render_stacked_area_chart(self, df: pd.DataFrame, data_type: str):
         st.markdown("### 📊 Stacked Area Chart - Temporal Composition")
@@ -190,12 +196,33 @@ fig.show()
         **Key Features:** Reveals trends in individual components and shifting proportions.
         """)
 
-        st.code('''
-import plotly.express as px
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+
+        st.code('''import plotly.express as px
 import pandas as pd
-df_trend = pd.DataFrame({ ... })  # time-series data
-fig = px.area(df_trend, x='Month', y=['Cat1', 'Cat2', 'Cat3'],
-              title='Composition Over Time')
+                
+categories = df['Category'].tolist()
+base_values = df['Value'].values
+months = pd.date_range('2024-01-01', periods=12, freq='M')
+
+data = []
+for month in months:
+    seasonal = 1 + 0.15 * np.sin(2 * np.pi * (month.month - 1) / 12)
+    noise = np.random.normal(1, 0.08, len(categories))
+    row = {'Month': month}
+    for i, cat in enumerate(categories):
+        row[cat] = max(0.1, base_values[i] * seasonal * noise[i])
+    data.append(row)
+
+trend_df = pd.DataFrame(data)
+
+fig = px.area(
+    trend_df, x='Month', y=categories,
+    title=f"{data_type} - Composition Over 12 Months",
+    color_discrete_sequence=px.colors.qualitative.Safe
+)
 fig.show()
         ''', language='python')
 
@@ -229,14 +256,31 @@ fig.show()
         
         **Key Features:** Each block represents equal share, easier to compare than pie slices.
         """)
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
 
-        st.code('''
-import squarify
-import matplotlib.pyplot as plt
-squarify.plot(sizes=[40, 30, 20, 10], label=['A\\n40%', 'B\\n30%', 'C\\n20%', 'D\\n10%'],
-              color=['#FF9999','#66B2FF','#99FF99','#FFD700'])
-plt.axis('off')
-plt.show()
+        st.code('''import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(10, 6))
+
+cmap = cm.get_cmap("Set3", len(df))
+colors = [cmap(i) for i in range(len(df))]
+
+labels = [f"{cat}\n{val:.1f}%" for cat,
+            val in zip(df['Category'], df['Percentage'])]
+
+squarify.plot(
+    sizes=df['Value'],
+    label=labels,
+    color=colors,
+    alpha=0.8,
+    ax=ax,
+    text_kwargs={'fontsize': 10}
+)
+
+ax.set_title(f"{data_type} - Waffle Chart")
+ax.axis('off')
         ''', language='python')
 
     def render_mosaic_plot(self, df: pd.DataFrame, data_type: str):
@@ -278,10 +322,39 @@ plt.show()
         **Key Features:** Area proportional to value, great for contingency tables.
         """)
 
-        st.code('''
-pivot_df.plot(kind='bar', stacked=True, color=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'])
-plt.title('Mosaic Plot')
-plt.show()
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
+        st.code('''import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import pandas as pd                
+
+ # Create hierarchical data: main category × quarter
+main_cats = df['Category'].tolist()
+quarters = ['Q1', 'Q2', 'Q3', 'Q4']
+
+mosaic_data = []
+for cat in main_cats:
+    base = df[df['Category'] == cat]['Value'].iloc[0] / 4
+    variations = base * np.array([0.9, 1.1, 0.85, 1.15])
+    for q, val in zip(quarters, variations):
+        mosaic_data.append(
+            {'Category': cat, 'Quarter': q, 'Value': val})
+
+mosaic_df = pd.DataFrame(mosaic_data)
+pivot = mosaic_df.pivot(
+    index='Category', columns='Quarter', values='Value')
+
+fig, ax = plt.subplots(figsize=(12, 7))
+
+# Use Matplotlib colormap for quarters
+cmap = cm.get_cmap("Set2", 4)  # 4 colors for 4 quarters
+colors = [cmap(i) for i in range(4)]  # RGBA tuples
+
+pivot.plot(kind='bar', stacked=True, ax=ax, color=colors)
+ax.set_title(f"{data_type} - Mosaic Plot (by Quarter)")
+ax.set_ylabel("Contribution")
+ax.legend(title="Quarter")
         ''', language='python')
 
     def render_voronoi_diagram(self, df: pd.DataFrame, data_type: str):
@@ -335,42 +408,69 @@ plt.show()
         
         **Key Features:** Larger categories claim more space via proximity.
         """)
-
+        st.markdown("#### 🛠️ Dataset")
+        st.dataframe(df)
+        st.markdown("#### 🛠️ Sample Code")
         st.code('''
 from scipy.spatial import Voronoi, voronoi_plot_2d
+                
 vor = Voronoi(points)
 voronoi_plot_2d(vor, ax=ax)
 ax.fill(*zip(*polygon), alpha=0.6)
-plt.show()
-        ''', language='python')
+plt.show()''', language='python')
 
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Composition Visualizations")
-        col1, col2 = st.columns(2)
+        st.markdown(
+            "### 🥧 Understanding Composition and Part-to-Whole Analysis")
+        st.markdown("""
+        Composition analysis explains how individual components combine to form a whole.
+        Rather than focusing on absolute values, it emphasizes **relative contribution**
+        and structural balance.
+        """)
 
-        with col1:
-            st.markdown("""
-            **Parts-to-Whole Relationship**
-            - Always sums to 100% or a meaningful total
-            - Shows relative contribution of each part
-            """)
-            st.markdown("""
-            **Comparative Analysis**
-            - Easy to spot dominant vs minor components
-            - Visual hierarchy through size/area
-            """)
+        st.markdown("#### 🧩 Parts Sum to a Meaningful Whole")
+        st.markdown("""
+        All components together represent a complete entity—often 100% of a total,
+        such as revenue, users, or capacity.
 
-        with col2:
-            st.markdown("""
-            **Temporal Composition**
-            - Tracks how shares evolve over time
-            - Highlights rising/falling components
-            """)
-            st.markdown("""
-            **Multi-dimensional Composition**
-            - Supports hierarchy and subgroups
-            - Handles nested breakdowns
-            """)
+        This constraint provides essential context and prevents misleading interpretation.
+        """)
+
+        st.markdown("#### 📊 Showing Relative Proportions Clearly")
+        st.markdown("""
+        Composition analysis highlights **how large each part is relative to the whole**.
+        This makes dominance, imbalance, or diversity immediately visible—even when
+        absolute values differ significantly.
+        """)
+
+        st.markdown("#### 🎯 Emphasizing Contribution of Each Component")
+        st.markdown("""
+        Understanding each component’s contribution clarifies its role within the system.
+
+        Common use cases include:
+        - Revenue by product or region  
+        - Resource allocation by department  
+        - Category distribution in datasets  
+        """)
+
+        st.markdown("#### ⏱️ Showing Changes in Composition Over Time")
+        st.markdown("""
+        Composition is dynamic. Tracking proportional changes over time reveals:
+        - Growth or decline of components  
+        - Structural shifts  
+        - Strategic or market-driven changes  
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Composition Analysis Matters")
+        st.markdown("""
+        Composition-focused views improve transparency and communication.
+        They help stakeholders:
+        - Understand system structure  
+        - Identify imbalances  
+        - Monitor long-term changes
+        """)
 
     def render_examples(self, dataset_type: str, df: pd.DataFrame):
         st.markdown("### 💡 Real-world Examples")
@@ -410,5 +510,5 @@ plt.show()
         if chart_type in chart_map:
             chart_map[chart_type]()
 
-        self.render_key_characteristics()
         self.render_examples(dataset_type, df)
+        self.render_key_characteristics()

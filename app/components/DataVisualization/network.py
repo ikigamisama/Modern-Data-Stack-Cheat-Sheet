@@ -197,6 +197,59 @@ class Network:
         ))
 
         st.plotly_chart(fig, width='stretch')
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""
+import networkx as nx
+import plotly.graph_objects as go
+                
+G = nx.Graph()
+# Add nodes and edges to G
+pos = nx.spring_layout(G)
+edge_x = []
+edge_y = []
+for u, v in G.edges():
+    x0, y0 = pos[u]
+    x1, y1 = pos[v]
+    edge_x += [x0, x1, None]
+    edge_y += [y0, y1, None]
+                
+edge_trace = go.Scatter(
+    x=edge_x, y=edge_y,
+    line=dict(width=0.5, color='#888'),
+    hoverinfo='none',
+    mode='lines'
+)
+                
+node_x = [pos[n][0] for n in G.nodes()]
+node_y = [pos[n][1] for n in G.nodes()]
+node_trace = go.Scatter(
+    x=node_x, y=node_y,
+    mode='markers+text',
+    text=[n for n in G.nodes()],
+    textposition='top center',
+    hovertext=[f"{n}<br>Degree: {G.degree(n)}" for n in G.nodes()],
+    hoverinfo='text',
+    marker=dict(
+        size=[5 + G.degree(n)*3 for n in G.nodes()],
+        color=[G.degree(n) for n in G.nodes()],
+        colorscale='Viridis',
+        showscale=True,
+        colorbar=dict(title="Degree")
+    )
+)
+                
+fig = go.Figure(data=[edge_trace, node_trace],
+layout=go.Layout(
+    showlegend=False,
+    hovermode='closest',
+    margin=dict(b=20, l=5, r=5, t=40),
+    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    height=700
+))
+fig.show()
+                
+""", language='python')
 
     def render_chord_diagram(self, G: nx.Graph, data_type: str):
         st.markdown("### 🎵 Chord Diagram - Flow Between Entities")
@@ -243,6 +296,29 @@ class Network:
             for node, val in top_out:
                 st.info(f"📤 {node}: {val:.0f}")
 
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import networkx as nx
+import plotly.graph_objects as go
+                
+G = nx.Graph()
+matrix = nx.to_numpy_array(G)
+nodes = list(G.nodes())
+fig = go.Figure()
+fig.add_trace(go.Heatmap(
+    z=matrix,
+    x=nodes,
+    y=nodes,
+    colorscale='Viridis',
+    hovertemplate='From %{y} to %{x}: %{z}<extra></extra>'
+))
+fig.update_layout(
+    title="Connection Matrix (Chord Representation)",
+    xaxis_title="Target",
+    yaxis_title="Source",
+    height=700
+)
+fig.show()""", language='python')
+
     def render_arc_diagram(self, G: nx.Graph, data_type: str):
         st.markdown("### 〰️ Arc Diagram - Linear Connection View")
 
@@ -280,6 +356,46 @@ class Network:
 
         st.pyplot(fig)
         plt.close(fig)
+
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import networkx as nx
+import matplotlib.pyplot as plt
+from matplotlib.patches import Arc
+
+nodes = list(G.nodes())
+pos = {node: i for i, node in enumerate(nodes)}
+
+fig, ax = plt.subplots(figsize=(14, 8))
+
+# Nodes
+degrees = dict(G.degree())
+sizes = [100 + degrees[n] * 30 for n in nodes]
+ax.scatter(range(len(nodes)), [
+            0]*len(nodes), s=sizes, c='skyblue', alpha=0.8, edgecolors='black')
+
+# Labels
+for i, node in enumerate(nodes):
+    ax.text(i, -0.05, node, rotation=45,
+            ha='right', va='top', fontsize=9)
+
+# Arcs
+for u, v in G.edges():
+    i, j = pos[u], pos[v]
+    if i > j:
+        i, j = j, i
+    height = (j - i) / 4
+    center = (i + j) / 2
+    arc = Arc((center, height), (j - i)*1.1, height*2,
+                theta1=0, theta2=180, linewidth=2, color='gray', alpha=0.6)
+    ax.add_patch(arc)
+
+ax.set_xlim(-1, len(nodes))
+ax.set_ylim(-0.3, len(nodes)//3)
+ax.axis('off')
+ax.set_title(f"{data_type} - Arc Diagram")
+
+st.pyplot(fig)
+plt.close(fig)""", language='python')
 
     def render_sociogram(self, G: nx.Graph, data_type: str):
         st.markdown("### 👥 Sociogram - Social Structure")
@@ -341,33 +457,98 @@ class Network:
             for n, c in top_bet:
                 st.info(f"{n} — Betweenness: {c:.4f}")
 
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import networkx as nx
+import matplotlib.pyplot as plt
+                
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
+
+# Spring layout
+pos1 = nx.spring_layout(G, k=3, iterations=100, seed=42)
+degrees = dict(G.degree())
+sizes = [200 + degrees[n] * 40 for n in G.nodes()]
+
+# Role coloring
+colors = []
+for n in G.nodes():
+    if any(k in n for k in ['CEO', 'Influencer', 'Celebrity', 'Server', 'Hub']):
+        colors.append('gold')
+    elif any(k in n for k in ['VP', 'Manager', 'Router']):
+        colors.append('lightblue')
+    else:
+        colors.append('lightgreen')
+
+nx.draw_networkx_nodes(G, pos1, node_size=sizes,
+                        node_color=colors, alpha=0.9, ax=ax1)
+nx.draw_networkx_edges(G, pos1, alpha=0.5, ax=ax1)
+nx.draw_networkx_labels(G, pos1, font_size=9, ax=ax1)
+ax1.set_title("Spring Layout - Natural Clusters")
+ax1.axis('off')
+
+# Circular layout
+pos2 = nx.circular_layout(G)
+nx.draw_networkx_nodes(G, pos2, node_size=sizes,
+                        node_color=colors, alpha=0.9, ax=ax2)
+nx.draw_networkx_edges(G, pos2, alpha=0.5, ax=ax2)
+nx.draw_networkx_labels(G, pos2, font_size=9, ax=ax2)
+ax2.set_title("Circular Layout - Clear Individual Links")
+ax2.axis('off')
+
+plt.tight_layout()
+st.pyplot(fig)
+plt.close(fig)
+                """, language='python')
+
     def render_key_characteristics(self):
-        st.markdown("### 🎯 Key Characteristics of Network Visualizations")
-        col1, col2 = st.columns(2)
+        st.markdown("### 🕸️ Understanding Network and Graph Analysis")
 
-        with col1:
-            st.markdown("""
-            **Interconnectedness**
-            - Reveals hidden relationships
-            - Shows direct and indirect links
-            """)
-            st.markdown("""
-            **Centrality & Influence**
-            - Identifies key players
-            - Measures node importance
-            """)
+        st.markdown("""
+        Network analysis models data as **interconnected entities** rather than
+        isolated points. It reveals structure, influence, and collective behavior
+        within complex systems.
+        """)
 
-        with col2:
-            st.markdown("""
-            **Community Structure**
-            - Detects natural clusters
-            - Shows group formation
-            """)
-            st.markdown("""
-            **Flow & Bottlenecks**
-            - Highlights critical paths
-            - Identifies vulnerabilities
-            """)
+        st.markdown("#### 🔗 Showing Interconnectedness")
+        st.markdown("""
+        Nodes represent entities and edges represent relationships.
+        This structure highlights dependencies and interaction patterns that
+        traditional analysis often misses.
+        """)
+
+        st.markdown("#### ⭐ Revealing Central and Peripheral Nodes")
+        st.markdown("""
+        Network structure naturally exposes importance:
+        - **Central nodes** act as hubs, influencers, or bottlenecks  
+        - **Peripheral nodes** have limited connections  
+
+        Centrality metrics help quantify these roles.
+        """)
+
+        st.markdown("#### 🧩 Identifying Clusters and Communities")
+        st.markdown("""
+        Networks often contain communities—groups of nodes that are more strongly
+        connected to each other than to the rest of the network.
+
+        Community detection simplifies complex systems into meaningful subgroups.
+        """)
+
+        st.markdown("#### 📏 Displaying Relationship Strength")
+        st.markdown("""
+        Edges can be weighted to reflect strength, frequency, or capacity.
+        Thicker or stronger edges indicate dominant relationships, while weaker
+        links reveal secondary interactions.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Network Analysis Matters")
+        st.markdown("""
+        Network analysis transforms complex interconnected data into interpretable
+        structures. It supports:
+        - Influence and risk analysis  
+        - System and dependency mapping  
+        - Community and behavior discovery  
+        """)
 
     def render_examples(self, dataset_type: str, G: nx.Graph):
         st.markdown("### 💡 Real-world Examples")
@@ -388,12 +569,6 @@ class Network:
                     st.success(
                         f"**Current Network:** {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
 
-    def render_edge_preview(self, G: nx.Graph):
-        st.markdown("### 📋 Sample Connections")
-        edges = [(u, v, d.get('weight', 1)) for u, v, d in G.edges(data=True)]
-        df = pd.DataFrame(edges[:20], columns=['Source', 'Target', 'Weight'])
-        st.dataframe(df, width='stretch')
-
     def output(self):
         self.render_header()
         chart_type, dataset_type, num_nodes, show_communities = self.render_configuration()
@@ -410,6 +585,5 @@ class Network:
         if chart_type in chart_map:
             chart_map[chart_type]()
 
-        self.render_key_characteristics()
         self.render_examples(dataset_type, G)
-        self.render_edge_preview(G)
+        self.render_key_characteristics()

@@ -31,32 +31,6 @@ class TextAnalysis:
         document themes, and content structure.
         """)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("""
-            **When to Use:**
-            - Analyzing customer feedback and reviews
-            - Exploring large text corpora
-            - Identifying key themes in documents
-            - Comparing text sources
-            - Mining social media content
-            """)
-
-        with col2:
-            st.markdown("""
-            **Key Characteristics:**
-            - Visualizes unstructured text data
-            - Shows word frequency and importance
-            - Reveals document themes
-            - Enables pattern discovery
-            """)
-
-        st.markdown("""
-        **Supported Visualizations:**
-        - **Word Cloud** – Displays most frequent words with size proportional to occurrence
-        - **Concordance Plot** – Shows keyword occurrences in context (keyword-in-context lines)
-        """)
-
     def render_configuration(self):
         st.markdown("### ⚙️ Visualization Settings")
         col1, col2, col3 = st.columns([2, 2, 2])
@@ -171,7 +145,39 @@ class TextAnalysis:
         ax.imshow(wc, interpolation='bilinear')
         ax.axis('off')
         plt.tight_layout()
-        return fig
+        st.pyplot(fig, width="stretch")
+
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+from collections import Counter
+import re
+
+text = re.sub(r'[^\w\s]', '', text.lower())
+stopwords = {'the', 'and', 'for', 'with', 'this',
+                'that', 'was', 'very', 'have', 'but', 'not', 'after'}
+words = [w for w in text.split() if w not in stopwords and len(w) > 3]
+
+word_freq = Counter(words)
+if not word_freq:
+    word_freq = Counter(
+        {"battery": 20, "camera": 15, "charging": 12, "phone": 10})
+
+wc = WordCloud(
+    width=800, height=500,
+    background_color='white',
+    colormap='viridis',
+    max_words=100,
+    relative_scaling=0.5,
+    min_font_size=10
+).generate_from_frequencies(word_freq)
+
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.imshow(wc, interpolation='bilinear')
+ax.axis('off')
+plt.tight_layout()         
+""", language="python")
 
     def create_concordance_plot(self, text: str, keyword: str) -> go.Figure:
         keyword = keyword.lower()
@@ -232,7 +238,72 @@ class TextAnalysis:
             showlegend=False,
             plot_bgcolor="white"
         )
-        return fig
+        st.plotly_chart(fig, width="stretch")
+
+        st.markdown("#### 🛠️ Sample Code")
+        st.code("""import plotly.graph_objects as go
+import re
+
+keyword = keyword.lower()
+lines = [line.strip() for line in text.split('\n') if line.strip()]
+matches = []
+
+for i, line in enumerate(lines):
+    lower_line = line.lower()
+    if keyword in lower_line:
+        start = lower_line.find(keyword)
+        context_before = line[max(0, start-40):start]
+        context_after = line[start+len(keyword):start+len(keyword)+40]
+        matches.append({
+            "line_num": i+1,
+            "before": context_before,
+            "keyword": keyword.capitalize(),
+            "after": context_after
+        })
+
+if not matches:
+    st.warning(
+        f"No occurrences of '{keyword}' found in the sample text.")
+    return go.Figure()
+
+# Sort by line number
+matches.sort(key=lambda x: x["line_num"])
+
+y_positions = list(range(len(matches)))
+texts = [
+    f"{m['before']}<b>{m['keyword']}</b>{m['after']}" for m in matches]
+
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=[0] * len(matches),
+    y=y_positions,
+    mode='text',
+    text=texts,
+    textposition='middle right',
+    hoverinfo='text',
+    textfont=dict(size=12)
+))
+
+fig.add_trace(go.Scatter(
+    x=[0] * len(matches),
+    y=y_positions,
+    mode='markers',
+    marker=dict(color='#e74c3c', size=10),
+    hoverinfo='none'
+))
+
+fig.update_layout(
+    title=f"Concordance Plot – Occurrences of '{keyword.capitalize()}'<br><sub>Keyword in context from sample text</sub>",
+    xaxis=dict(showgrid=False, zeroline=False,
+                showticklabels=False, range=[-1, 1]),
+    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    height=300 + len(matches)*30,
+    showlegend=False,
+    plot_bgcolor="white"
+)
+fig.show()
+""", language="python")
 
     def render_chart(self, chart_type: str, scenario: str, keyword: str):
         st.markdown(f"### {chart_type}: {scenario}")
@@ -240,20 +311,85 @@ class TextAnalysis:
         text = self.get_sample_text(scenario)
 
         if chart_type == "Word Cloud":
-            fig = self.create_word_cloud(text)
-            st.pyplot(fig)
-            plt.close(fig)
+            self.create_word_cloud(text)
             st.info(
                 "**Insight**: Larger words appear more frequently in the text corpus.")
 
         else:  # Concordance Plot
-            fig = self.create_concordance_plot(text, keyword or "battery")
-            if fig.data:  # Only plot if there are matches
-                st.plotly_chart(fig, width='stretch')
-                st.info(
-                    "**Insight**: Shows real contextual usage of the keyword across different responses.")
+            self.create_concordance_plot(text, keyword or "battery")
+            st.info(
+                "**Insight**: Shows real contextual usage of the keyword across different responses.")
+
+    def render_examples(self):
+        st.markdown("### 💡 Real-world Examples")
+
+        examples = {
+            "Customer Reviews": "Most frequent complaint or praise topics",
+            "Social Media": "Trending hashtags and discussion themes",
+            "Academic Research": "Common keywords across paper abstracts",
+            "News Analysis": "Topic frequency across news articles",
+            "Survey Responses": "Open-ended feedback analysis"
+        }
+
+        for example, description in examples.items():
+            with st.expander(f"💭 {example}"):
+                st.write(description)
+
+    def render_key_characteristics(self):
+        st.markdown("### 📝 Understanding Text Analysis")
+
+        st.markdown("""
+        Text analysis extracts structure and meaning from **unstructured text data**.
+        It transforms language into signals that can be analyzed and visualized.
+        """)
+
+        st.markdown("#### 🔤 Visualizes Unstructured Text Data")
+        st.markdown("""
+        Raw text is transformed into interpretable representations such as:
+        - Word frequency distributions  
+        - Embeddings and clusters  
+        - Keyword visualizations  
+        """)
+
+        st.markdown("#### 📊 Shows Word Frequency and Importance")
+        st.markdown("""
+        Text analysis highlights:
+        - Common terms  
+        - Rare but meaningful keywords  
+        - Relative importance using TF-IDF or similar techniques  
+        """)
+
+        st.markdown("#### 🧠 Reveals Document Themes")
+        st.markdown("""
+        By grouping words and documents, text analysis uncovers:
+        - Topics  
+        - Intents  
+        - Repeated narratives  
+
+        These themes emerge across large corpora.
+        """)
+
+        st.markdown("#### 🔍 Enables Pattern Discovery")
+        st.markdown("""
+        Text analysis identifies recurring phrases, anomalies,
+        and emerging trends that would be difficult to detect manually.
+        """)
+
+        st.divider()
+
+        st.markdown("#### 🎯 Why Text Analysis Matters")
+        st.markdown("""
+        Text analysis enables scalable understanding of language data.
+        It supports:
+        - NLP applications  
+        - Customer feedback analysis  
+        - Log and ticket mining  
+        - Knowledge discovery  
+        """)
 
     def output(self):
         self.render_header()
         chart_type, scenario, keyword = self.render_configuration()
         self.render_chart(chart_type, scenario, keyword)
+        self.render_examples()
+        self.render_key_characteristics()
