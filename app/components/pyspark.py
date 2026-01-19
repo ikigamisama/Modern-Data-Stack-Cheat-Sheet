@@ -82,7 +82,7 @@ def profile_dataframe(df):
         count(when(col(c).isNull(), c)).alias(c)
         for c in df.columns
     ])
-    print("\n=== Null Counts ===")
+    print("=== Null Counts ===")
     null_counts.show()
 
     # Distinct counts per column
@@ -90,11 +90,11 @@ def profile_dataframe(df):
         countDistinct(c).alias(c)
         for c in df.columns
     ])
-    print("\n=== Distinct Counts ===")
+    print("=== Distinct Counts ===")
     distinct_counts.show()
 
     # Data types
-    print("\n=== Data Types ===")
+    print("=== Data Types ===")
     df.printSchema()
 
     return df
@@ -104,9 +104,7 @@ duplicate_count = df.count() - df.dropDuplicates().count()
 print(f"Duplicate rows: {duplicate_count}")
 
 # Find duplicate records based on key columns
-duplicates = df.groupBy("id", "name") \
-    .agg(count("*").alias("count")) \
-    .filter(col("count") > 1)
+duplicates = df.groupBy("id", "name").agg(count("*").alias("count")).filter(col("count") > 1)
 
 # Data quality checks
 quality_checks = df.select(
@@ -265,19 +263,17 @@ df_agg = df.groupBy("department").agg(
 )
 
 # Pivot with aggregations
-pivot_df = df.groupBy("year", "quarter") \
-    .pivot("product_category") \
+pivot_df = df.groupBy("year", "quarter")
+    .pivot("product_category")
     .agg(
         sum("revenue").alias("revenue"),
         count("*").alias("count")
     )
 
 # Rollup and Cube for subtotals
-rollup_df = df.rollup("year", "quarter", "category") \
-    .agg(sum("amount").alias("total_amount"))
+rollup_df = df.rollup("year", "quarter", "category").agg(sum("amount").alias("total_amount"))
 
-cube_df = df.cube("region", "product", "channel") \
-    .agg(sum("sales").alias("total_sales"))
+cube_df = df.cube("region", "product", "channel").agg(sum("sales").alias("total_sales"))
 
 # Custom aggregation using expr
 df_custom_agg = df.groupBy("category").agg(
@@ -369,9 +365,7 @@ df_unmatched = df1.join(df2, "key", "left_anti")
 # Deduplication logic with window functions
 window_dedup = Window.partitionBy(
     "user_id", "date").orderBy(col("timestamp").desc())
-df_dedup = df.withColumn("row_num", row_number().over(window_dedup)) \
-    .filter(col("row_num") == 1) \
-    .drop("row_num")
+df_dedup = df.withColumn("row_num", row_number().over(window_dedup)).filter(col("row_num") == 1).drop("row_num")
 """, language='python')
 
 
@@ -499,16 +493,14 @@ deltaTable = DeltaTable.forPath(spark, "/path/to/delta-table")
 deltaTable.alias("target").merge(
     df_updates.alias("source"),
     "target.id = source.id"
-).whenMatchedUpdateAll() \
- .whenNotMatchedInsertAll() \
- .execute()
+).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
 
 # Time travel with Delta
 df_historical = (
-        spark.read
-            .format("delta")
-            .option("versionAsOf", 5)
-            .load("/path/to/delta-table")    
+    spark.read
+        .format("delta")
+        .option("versionAsOf", 5)
+        .load("/path/to/delta-table")    
 )
 
 df_timestamp = (
@@ -573,13 +565,10 @@ def analytics_patterns():
 # Cohort analysis
 cohort_analysis = df.withColumn("cohort_month",
     trunc(col("first_purchase_date"), "month")
-).groupBy("cohort_month") \
- .pivot("months_since_first_purchase") \
- .agg(countDistinct("user_id"))
+).groupBy("cohort_month").pivot("months_since_first_purchase").agg(countDistinct("user_id"))
 
 # Retention analysis
-retention = df.groupBy("signup_month") \
-    .agg(
+retention = df.groupBy("signup_month").agg(
         countDistinct("user_id").alias("cohort_size"),
         countDistinct(when(col("months_active") >= 1, col("user_id"))).alias("month_1"),
         countDistinct(when(col("months_active") >= 3, col("user_id"))).alias("month_3"),
@@ -652,9 +641,7 @@ def performance_tuning():
     st.header("🎯 Performance Tuning Tips")
     st.code("""
 # Repartition before expensive operations
-df_optimized = df.repartition(200, "key_column") \
-    .groupBy("key_column") \
-    .agg(sum("value"))
+df_optimized = df.repartition(200, "key_column").groupBy("key_column").agg(sum("value"))
 
 # Use broadcast joins for small tables (< 10MB)
 df_result = large_df.join(broadcast(small_df), "id")
@@ -670,11 +657,7 @@ df.count()  # Trigger caching
 df.unpersist()
 
 # Write to optimized formats
-df.write.mode("overwrite") \
-    .format("parquet") \
-    .option("compression", "snappy") \
-    .partitionBy("year", "month") \
-    .save("optimized_output/")
+df.write.mode("overwrite").format("parquet").option("compression", "snappy").partitionBy("year", "month").save("optimized_output/")
 
 # Use columnar formats for analytical queries
 # Parquet > ORC > JSON > CSV
